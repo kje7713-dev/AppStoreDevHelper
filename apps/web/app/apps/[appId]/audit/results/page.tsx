@@ -34,7 +34,7 @@ type ReleaseAudit = {
   createdAt: string
 }
 
-const severityColor = {
+const SEVERITY_COLORS: Record<string, string> = {
   low: "bg-yellow-900 text-yellow-300",
   medium: "bg-orange-900 text-orange-300",
   high: "bg-red-900 text-red-300",
@@ -140,7 +140,7 @@ ${audit.githubTasks.map((t) => `### ${t.title}\n${t.summary}\n\n**Acceptance Cri
               {audit.blockingIssues.map((issue, i) => (
                 <div key={i} className="p-4 rounded-xl bg-gray-900 border border-gray-800">
                   <div className="flex items-start gap-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${severityColor[issue.severity]} shrink-0 mt-0.5`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${SEVERITY_COLORS[issue.severity]} shrink-0 mt-0.5`}>
                       {issue.severity}
                     </span>
                     <div>
@@ -173,7 +173,7 @@ ${audit.githubTasks.map((t) => `### ${t.title}\n${t.summary}\n\n**Acceptance Cri
                 <div key={i} className="p-5 rounded-xl bg-gray-900 border border-gray-800">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium">{task.title}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full ${severityColor[task.priority as "low" | "medium" | "high"] ?? "bg-gray-800 text-gray-300"}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${SEVERITY_COLORS[task.priority] ?? "bg-gray-800 text-gray-300"}`}>
                       {task.priority}
                     </span>
                   </div>

@@ -1,36 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { apps } from "@/lib/store"
+import type { ReleaseAudit, ReleaseIssue } from "@/lib/types"
+import type { GithubTask } from "@/lib/types"
 import { randomUUID } from "crypto"
-
-type ReleaseIssue = {
-  area: "StoreKit" | "AppReview" | "TestFlight" | "Metadata" | "ASO" | "Ads" | "Other"
-  severity: "low" | "medium" | "high"
-  issue: string
-  recommendedFix: string
-}
-
-type GithubTask = {
-  title: string
-  priority: "low" | "medium" | "high"
-  summary: string
-  acceptanceCriteria: string[]
-  labels?: string[]
-}
-
-type ReleaseAudit = {
-  id: string
-  appId: string
-  releaseRiskScore: number
-  summary: string
-  blockingIssues: ReleaseIssue[]
-  checklists: {
-    testFlight: string[]
-    appReview: string[]
-    storeKit?: string[]
-  }
-  githubTasks: GithubTask[]
-  createdAt: string
-}
 
 function generateMockAudit(appId: string, input: {
   latestChanges: string

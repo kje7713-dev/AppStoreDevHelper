@@ -6,6 +6,12 @@
   "scripts": {
     "dev": "cd apps/web && npm run dev",
     "build": "cd apps/web && npm run build",
-    "lint": "cd apps/web && npm run lint"
+    "lint": "cd apps/web && npm run lint",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/runner": "^4.1.5",
+    "vitest": "^4.1.5",
+    "zod": "^4.3.6"
   }
 }

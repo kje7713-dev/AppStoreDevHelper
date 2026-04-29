@@ -42,7 +42,7 @@ export default function NewAppPage() {
       if (!res.ok) throw new Error("Failed to create app")
       const app = await res.json()
       router.push(`/apps/${app.id}`)
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.")
       setLoading(false)
     }

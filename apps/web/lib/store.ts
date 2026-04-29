@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto"
-
 export type AppProfile = {
   id: string
   name: string

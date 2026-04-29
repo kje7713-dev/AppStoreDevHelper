@@ -210,18 +210,25 @@ function ChecklistCard({ title, items }: { title: string; items: string[] }) {
       <h2 className="font-semibold mb-3">{title}</h2>
       <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-3 cursor-pointer" onClick={() => {
-            setChecked(prev => {
-              const next = new Set(prev)
-              if (next.has(i)) next.delete(i)
-              else next.add(i)
-              return next
-            })
-          }}>
+          <li key={i}>
+          <button
+            type="button"
+            className="flex items-start gap-3 w-full text-left cursor-pointer"
+            onClick={() => {
+              setChecked(prev => {
+                const next = new Set(prev)
+                if (next.has(i)) next.delete(i)
+                else next.add(i)
+                return next
+              })
+            }}
+            aria-pressed={checked.has(i)}
+          >
             <div className={`w-4 h-4 rounded border shrink-0 mt-0.5 flex items-center justify-center ${checked.has(i) ? "bg-indigo-600 border-indigo-600" : "border-gray-600"}`}>
               {checked.has(i) && <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
             </div>
             <span className={`text-sm ${checked.has(i) ? "line-through text-gray-500" : "text-gray-300"}`}>{item}</span>
+          </button>
           </li>
         ))}
       </ul>

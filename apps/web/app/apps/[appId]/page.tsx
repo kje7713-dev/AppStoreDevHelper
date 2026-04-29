@@ -24,20 +24,38 @@ type AppProfile = {
   updatedAt: string
 }
 
+type LatestAudit = {
+  id: string
+  releaseRiskScore: number
+  summary: string
+  createdAt: string
+}
+
+const riskColor = (score: number) => {
+  if (score < 30) return "text-green-400"
+  if (score < 60) return "text-yellow-400"
+  return "text-red-400"
+}
+
 export default function AppDetailPage() {
   const params = useParams()
   const appId = params.appId as string
   const [app, setApp] = useState<AppProfile | null>(null)
+  const [latestAudit, setLatestAudit] = useState<LatestAudit | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/apps/${appId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setApp(data)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    Promise.all([
+      fetch(`/api/apps/${appId}`).then((r) => r.json()),
+      fetch(`/api/apps/${appId}/audits`).then((r) => r.json()).catch(() => []),
+    ]).then(([appData, audits]) => {
+      setApp(appData)
+      if (Array.isArray(audits) && audits.length > 0) {
+        const latest = audits[0] as LatestAudit
+        setLatestAudit(latest)
+      }
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [appId])
 
   if (loading) return <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center"><div className="text-gray-400">Loading...</div></main>
@@ -65,6 +83,29 @@ export default function AppDetailPage() {
             Run Release Audit →
           </Link>
         </div>
+
+        {latestAudit && (
+          <div className="p-5 rounded-xl bg-gray-900 border border-gray-800 mb-6">
+            <div className="flex items-start justify-between mb-2">
+              <h2 className="text-sm font-medium text-gray-400">Latest Audit</h2>
+              <span className="text-xs text-gray-500">{new Date(latestAudit.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className={`text-4xl font-bold ${riskColor(latestAudit.releaseRiskScore)}`}>
+                {latestAudit.releaseRiskScore}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-300">{latestAudit.summary}</p>
+                <Link
+                  href={`/apps/${appId}/audit/results/${latestAudit.id}`}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block"
+                >
+                  View full report →
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {app.targetAudience && (

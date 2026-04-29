@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@appops/schemas/*": [
+        "../../packages/schemas/*"
+      ],
+      "@appops/core/*": [
+        "../../packages/core/*"
       ]
     }
   },

@@ -52,12 +52,15 @@ export default function AuditResultsPage() {
   const [audit, setAudit] = useState<ReleaseAudit | null>(null)
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(`audit-${appId}`)
-    if (stored) {
-      try {
-        setAudit(JSON.parse(stored))
-      } catch {}
+    async function load() {
+      const stored = sessionStorage.getItem(`audit-${appId}`)
+      if (stored) {
+        try {
+          setAudit(JSON.parse(stored))
+        } catch {}
+      }
     }
+    load()
   }, [appId])
 
   function exportMarkdown() {

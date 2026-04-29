@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { apps } from "@/lib/store"
 import { saveAudit } from "@/lib/audit-store"
 import { ReleaseAuditInputSchema } from "@/lib/schemas"
-import { generateMockAudit } from "@core/release-audit"
+import { generateMockAudit, type AuditInput } from "@core/release-audit"
 import type { ReleaseAudit } from "@/lib/types"
 import { randomUUID } from "crypto"
 
@@ -74,6 +74,25 @@ ${input.previousRejectionText ? `Previous Rejection: ${input.previousRejectionTe
   }
 }
 
+async function resolveAudit(appId: string, mockInput: AuditInput): Promise<ReleaseAudit> {
+  if (!process.env.OPENAI_API_KEY) return generateMockAudit(mockInput)
+  try {
+    return await generateAIAudit(appId, {
+      latestChanges: mockInput.latestChanges,
+      knownIssues: mockInput.knownIssues,
+      testFlightNotes: mockInput.testFlightNotes,
+      reviewerNotes: mockInput.reviewerNotes,
+      previousRejectionText: mockInput.previousRejectionText,
+      businessModel: mockInput.app.businessModel,
+      appName: mockInput.app.name,
+      category: mockInput.app.category,
+    })
+  } catch (err) {
+    console.error("OpenAI audit failed, falling back to mock:", err)
+    return generateMockAudit(mockInput)
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ appId: string }> }
@@ -94,28 +113,8 @@ export async function POST(
   const { latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText } =
     parsed.data
 
-  const mockInput = { app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText }
-
-  async function resolveAudit(): Promise<ReleaseAudit> {
-    if (!process.env.OPENAI_API_KEY) return generateMockAudit(mockInput)
-    try {
-      return await generateAIAudit(appId, {
-        latestChanges,
-        knownIssues,
-        testFlightNotes,
-        reviewerNotes,
-        previousRejectionText,
-        businessModel: mockInput.app.businessModel,
-        appName: mockInput.app.name,
-        category: mockInput.app.category,
-      })
-    } catch (err) {
-      console.error("OpenAI audit failed, falling back to mock:", err)
-      return generateMockAudit(mockInput)
-    }
-  }
-
-  const audit = await resolveAudit()
+  const mockInput: AuditInput = { app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText }
+  const audit = await resolveAudit(appId, mockInput)
 
   saveAudit(audit)
   return NextResponse.json(audit)

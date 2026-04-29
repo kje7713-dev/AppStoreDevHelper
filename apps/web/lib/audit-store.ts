@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { join } from "path"
+import { z } from "zod"
 import type { ReleaseAudit } from "./types"
 
 // File-based JSON storage for audit history.
@@ -8,6 +9,22 @@ import type { ReleaseAudit } from "./types"
 
 const DATA_DIR = join(process.cwd(), ".data")
 const AUDITS_FILE = join(DATA_DIR, "audits.json")
+
+// Lightweight schema to validate persisted audit records on read.
+const StoredAuditSchema = z.object({
+  id: z.string(),
+  appId: z.string(),
+  releaseRiskScore: z.number(),
+  summary: z.string(),
+  blockingIssues: z.array(z.unknown()),
+  checklists: z.object({
+    testFlight: z.array(z.string()),
+    appReview: z.array(z.string()),
+    storeKit: z.array(z.string()).optional(),
+  }),
+  githubTasks: z.array(z.unknown()),
+  createdAt: z.string(),
+})
 
 function ensureDataDir(): void {
   if (!existsSync(DATA_DIR)) {
@@ -19,7 +36,9 @@ function readAudits(): ReleaseAudit[] {
   try {
     if (!existsSync(AUDITS_FILE)) return []
     const raw = readFileSync(AUDITS_FILE, "utf-8")
-    return JSON.parse(raw) as ReleaseAudit[]
+    const parsed: unknown[] = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((item) => StoredAuditSchema.safeParse(item).success) as ReleaseAudit[]
   } catch {
     return []
   }

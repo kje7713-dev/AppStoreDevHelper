@@ -55,19 +55,6 @@ export default function AuditResultsByIdPage() {
 
   useEffect(() => {
     async function loadAudit() {
-      // Yield to event loop before setting state to avoid cascading renders.
-      await Promise.resolve()
-
-      const cached = sessionStorage.getItem(`audit-${auditId}`)
-      if (cached) {
-        try {
-          setAudit(JSON.parse(cached))
-          setLoading(false)
-          return
-        } catch {}
-      }
-
-      // Fall back to the API (allows bookmarking / sharing)
       try {
         const r = await fetch(`/api/audits/${auditId}`)
         if (!r.ok) throw new Error("Not found")
@@ -76,7 +63,6 @@ export default function AuditResultsByIdPage() {
       } catch {}
       setLoading(false)
     }
-
     loadAudit()
   }, [auditId])
 

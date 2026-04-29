@@ -94,27 +94,28 @@ export async function POST(
   const { latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText } =
     parsed.data
 
-  let audit: ReleaseAudit
+  const mockInput = { app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText }
 
-  if (process.env.OPENAI_API_KEY) {
+  async function resolveAudit(): Promise<ReleaseAudit> {
+    if (!process.env.OPENAI_API_KEY) return generateMockAudit(mockInput)
     try {
-      audit = await generateAIAudit(appId, {
+      return await generateAIAudit(appId, {
         latestChanges,
         knownIssues,
         testFlightNotes,
         reviewerNotes,
         previousRejectionText,
-        businessModel: app.businessModel,
-        appName: app.name,
-        category: app.category,
+        businessModel: mockInput.app.businessModel,
+        appName: mockInput.app.name,
+        category: mockInput.app.category,
       })
     } catch (err) {
       console.error("OpenAI audit failed, falling back to mock:", err)
-      audit = generateMockAudit({ app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText })
+      return generateMockAudit(mockInput)
     }
-  } else {
-    audit = generateMockAudit({ app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText })
   }
+
+  const audit = await resolveAudit()
 
   saveAudit(audit)
   return NextResponse.json(audit)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 
@@ -46,23 +46,21 @@ const riskColor = (score: number) => {
   return "text-red-400"
 }
 
+function readSessionAudit(appId: string): ReleaseAudit | null {
+  if (typeof window === "undefined") return null
+  try {
+    const stored = sessionStorage.getItem(`audit-${appId}`)
+    return stored ? (JSON.parse(stored) as ReleaseAudit) : null
+  } catch {
+    return null
+  }
+}
+
 export default function AuditResultsPage() {
   const params = useParams()
   const appId = params.appId as string
-  const [audit, setAudit] = useState<ReleaseAudit | null>(null)
-
-  useEffect(() => {
-    async function loadAudit() {
-      await Promise.resolve()
-      const stored = sessionStorage.getItem(`audit-${appId}`)
-      if (stored) {
-        try {
-          setAudit(JSON.parse(stored))
-        } catch {}
-      }
-    }
-    loadAudit()
-  }, [appId])
+  // Lazily initialise from sessionStorage on first client render (no effect needed).
+  const [audit] = useState<ReleaseAudit | null>(() => readSessionAudit(appId))
 
   function exportMarkdown() {
     if (!audit) return

@@ -16,7 +16,12 @@ export const CreateAppProfileSchema = z.object({
     .string()
     .regex(/^[a-zA-Z0-9\-\.]+$/, "Invalid bundle ID format")
     .optional(),
-  appStoreUrl: z.string().url("Invalid App Store URL").optional().or(z.literal("")).transform((v) => v || undefined),
+  appStoreUrl: z
+    .string()
+    .url("Invalid App Store URL")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => v || undefined),
   category: z.string().max(100).optional(),
   targetAudience: z.string().max(500).optional(),
   businessModel: z

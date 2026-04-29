@@ -35,8 +35,8 @@ export default function AuditPage() {
       })
       if (!res.ok) throw new Error("Audit failed")
       const audit = await res.json()
-      sessionStorage.setItem(`audit-${appId}`, JSON.stringify(audit))
-      router.push(`/apps/${appId}/audit/results`)
+      sessionStorage.setItem(`audit-${audit.id}`, JSON.stringify(audit))
+      router.push(`/apps/${appId}/audit/results/${audit.id}`)
     } catch (err) {
       setError("Failed to run audit. Please try again.")
       setLoading(false)

@@ -46,23 +46,39 @@ const riskColor = (score: number) => {
   return "text-red-400"
 }
 
-export default function AuditResultsPage() {
+export default function AuditResultsByIdPage() {
   const params = useParams()
   const appId = params.appId as string
+  const auditId = params.auditId as string
   const [audit, setAudit] = useState<ReleaseAudit | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadAudit() {
+      // Yield to event loop before setting state to avoid cascading renders.
       await Promise.resolve()
-      const stored = sessionStorage.getItem(`audit-${appId}`)
-      if (stored) {
+
+      const cached = sessionStorage.getItem(`audit-${auditId}`)
+      if (cached) {
         try {
-          setAudit(JSON.parse(stored))
+          setAudit(JSON.parse(cached))
+          setLoading(false)
+          return
         } catch {}
       }
+
+      // Fall back to the API (allows bookmarking / sharing)
+      try {
+        const r = await fetch(`/api/audits/${auditId}`)
+        if (!r.ok) throw new Error("Not found")
+        const data = (await r.json()) as ReleaseAudit
+        setAudit(data)
+      } catch {}
+      setLoading(false)
     }
+
     loadAudit()
-  }, [appId])
+  }, [auditId])
 
   function exportMarkdown() {
     if (!audit) return
@@ -96,11 +112,19 @@ ${audit.githubTasks.map((t) => `### ${t.title}\n${t.summary}\n\n**Acceptance Cri
     URL.revokeObjectURL(url)
   }
 
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-gray-400">Loading audit...</div>
+      </main>
+    )
+  }
+
   if (!audit) {
     return (
       <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-400 mb-4">No audit results found.</p>
+          <p className="text-gray-400 mb-4">Audit not found.</p>
           <Link href={`/apps/${appId}/audit`} className="text-indigo-400 hover:text-indigo-300">Run an audit →</Link>
         </div>
       </main>
@@ -215,24 +239,24 @@ function ChecklistCard({ title, items }: { title: string; items: string[] }) {
       <ul className="space-y-2">
         {items.map((item, i) => (
           <li key={i}>
-          <button
-            type="button"
-            className="flex items-start gap-3 w-full text-left cursor-pointer"
-            onClick={() => {
-              setChecked(prev => {
-                const next = new Set(prev)
-                if (next.has(i)) next.delete(i)
-                else next.add(i)
-                return next
-              })
-            }}
-            aria-pressed={checked.has(i)}
-          >
-            <div className={`w-4 h-4 rounded border shrink-0 mt-0.5 flex items-center justify-center ${checked.has(i) ? "bg-indigo-600 border-indigo-600" : "border-gray-600"}`}>
-              {checked.has(i) && <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-            </div>
-            <span className={`text-sm ${checked.has(i) ? "line-through text-gray-500" : "text-gray-300"}`}>{item}</span>
-          </button>
+            <button
+              type="button"
+              className="flex items-start gap-3 w-full text-left cursor-pointer"
+              onClick={() => {
+                setChecked(prev => {
+                  const next = new Set(prev)
+                  if (next.has(i)) next.delete(i)
+                  else next.add(i)
+                  return next
+                })
+              }}
+              aria-pressed={checked.has(i)}
+            >
+              <div className={`w-4 h-4 rounded border shrink-0 mt-0.5 flex items-center justify-center ${checked.has(i) ? "bg-indigo-600 border-indigo-600" : "border-gray-600"}`}>
+                {checked.has(i) && <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span className={`text-sm ${checked.has(i) ? "line-through text-gray-500" : "text-gray-300"}`}>{item}</span>
+            </button>
           </li>
         ))}
       </ul>

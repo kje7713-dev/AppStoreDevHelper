@@ -1,104 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { apps } from "@/lib/store"
-import type { ReleaseAudit, ReleaseIssue } from "@/lib/types"
-import type { GithubTask } from "@/lib/types"
+import { saveAudit } from "@/lib/audit-store"
+import { ReleaseAuditInputSchema } from "@/lib/schemas"
+import { generateMockAudit } from "@core/release-audit"
+import type { ReleaseAudit } from "@/lib/types"
 import { randomUUID } from "crypto"
 
-function generateMockAudit(appId: string, input: {
-  latestChanges: string
-  knownIssues?: string
-  testFlightNotes?: string
-  reviewerNotes?: string
-  previousRejectionText?: string
-  businessModel?: string
-}): ReleaseAudit {
-  const issues: ReleaseIssue[] = []
-
-  if (!input.reviewerNotes || input.reviewerNotes.trim().length < 20) {
-    issues.push({
-      area: "AppReview",
-      severity: "high",
-      issue: "Reviewer notes are missing or too brief",
-      recommendedFix: "Add detailed reviewer notes explaining all features, test credentials, and any edge cases.",
-    })
+async function generateAIAudit(
+  appId: string,
+  input: {
+    latestChanges: string
+    knownIssues?: string
+    testFlightNotes?: string
+    reviewerNotes?: string
+    previousRejectionText?: string
+    businessModel?: string
+    appName?: string
+    category?: string
   }
-
-  if ((input.businessModel === "subscription" || input.businessModel === "iap") && !input.testFlightNotes) {
-    issues.push({
-      area: "StoreKit",
-      severity: "medium",
-      issue: "Subscription app missing TestFlight StoreKit testing notes",
-      recommendedFix: "Document sandbox account testing steps for all subscription tiers.",
-    })
-  }
-
-  if (input.knownIssues && input.knownIssues.trim().length > 0) {
-    issues.push({
-      area: "Other",
-      severity: "medium",
-      issue: "Known issues present in release",
-      recommendedFix: "Resolve known issues before submission or document mitigation steps.",
-    })
-  }
-
-  const tasks: GithubTask[] = issues.map((issue) => ({
-    title: `[${issue.area}] ${issue.issue}`,
-    priority: issue.severity,
-    summary: issue.recommendedFix,
-    acceptanceCriteria: [
-      `The following issue is resolved: ${issue.issue}`,
-      "Verified in TestFlight or staging environment",
-    ],
-    labels: ["app-store", issue.area.toLowerCase(), issue.severity],
-  }))
-
-  const riskScore = Math.min(100, issues.length * 25 + (input.previousRejectionText ? 20 : 0))
-
-  return {
-    id: randomUUID(),
-    appId,
-    releaseRiskScore: riskScore,
-    summary: `Release audit complete. Found ${issues.length} issue(s). Risk score: ${riskScore}/100. ${riskScore < 30 ? "Release looks healthy." : riskScore < 60 ? "Some issues should be addressed." : "High risk - resolve blocking issues before submission."}`,
-    blockingIssues: issues,
-    checklists: {
-      testFlight: [
-        "Verify all critical user flows in TestFlight build",
-        "Test on latest iOS version",
-        "Test on minimum supported iOS version",
-        "Verify push notifications (if applicable)",
-        "Confirm in-app purchases work in sandbox",
-      ],
-      appReview: [
-        "Complete reviewer notes with test credentials",
-        "Verify app does not crash on launch",
-        "Ensure all metadata is accurate and complete",
-        "Check for placeholder content",
-        "Review App Store guidelines for your category",
-      ],
-      storeKit: (input.businessModel === "subscription" || input.businessModel === "iap")
-        ? [
-            "Test all subscription products in sandbox",
-            "Verify restore purchases flow",
-            "Test subscription cancellation and expiry",
-            "Confirm paywall UI is compliant",
-          ]
-        : undefined,
-    },
-    githubTasks: tasks,
-    createdAt: new Date().toISOString(),
-  }
-}
-
-async function generateAIAudit(appId: string, input: {
-  latestChanges: string
-  knownIssues?: string
-  testFlightNotes?: string
-  reviewerNotes?: string
-  previousRejectionText?: string
-  businessModel?: string
-  appName?: string
-  category?: string
-}): Promise<ReleaseAudit> {
+): Promise<ReleaseAudit> {
   const OpenAI = (await import("openai")).default
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
@@ -154,32 +74,48 @@ ${input.previousRejectionText ? `Previous Rejection: ${input.previousRejectionTe
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ appId: string }> }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ appId: string }> }
+) {
   const { appId } = await params
   const app = apps.get(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 
   const body = await req.json()
-  const input = {
-    latestChanges: body.latestChanges ?? "",
-    knownIssues: body.knownIssues,
-    testFlightNotes: body.testFlightNotes,
-    reviewerNotes: body.reviewerNotes,
-    previousRejectionText: body.previousRejectionText,
-    businessModel: app.businessModel,
-    appName: app.name,
-    category: app.category,
+  const parsed = ReleaseAuditInputSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    )
   }
+
+  const { latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText } =
+    parsed.data
+
+  let audit: ReleaseAudit
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      const audit = await generateAIAudit(appId, input)
-      return NextResponse.json(audit)
+      audit = await generateAIAudit(appId, {
+        latestChanges,
+        knownIssues,
+        testFlightNotes,
+        reviewerNotes,
+        previousRejectionText,
+        businessModel: app.businessModel,
+        appName: app.name,
+        category: app.category,
+      })
     } catch (err) {
       console.error("OpenAI audit failed, falling back to mock:", err)
+      audit = generateMockAudit({ app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText })
     }
+  } else {
+    audit = generateMockAudit({ app, latestChanges, knownIssues, testFlightNotes, reviewerNotes, previousRejectionText })
   }
 
-  const audit = generateMockAudit(appId, input)
+  saveAudit(audit)
   return NextResponse.json(audit)
 }

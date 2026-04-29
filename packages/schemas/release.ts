@@ -1,3 +1,5 @@
+import { GithubTask } from "./task"
+
 export type ReleaseAudit = {
   id: string
   appId: string

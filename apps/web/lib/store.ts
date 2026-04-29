@@ -20,5 +20,6 @@ export type AppProfile = {
   updatedAt: string
 }
 
-// Module-level singleton - persists across requests in the same Node.js process
+// Module-level singleton - persists across requests in the same Node.js process.
+// NOTE: MVP/development only - data is lost on server restart. Replace with persistent storage for production.
 export const apps = new Map<string, AppProfile>()

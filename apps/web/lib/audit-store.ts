@@ -38,7 +38,13 @@ function readAudits(): ReleaseAudit[] {
     const raw = readFileSync(AUDITS_FILE, "utf-8")
     const parsed: unknown[] = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    return parsed.filter((item) => StoredAuditSchema.safeParse(item).success) as ReleaseAudit[]
+    return parsed.filter((item) => {
+      const result = StoredAuditSchema.safeParse(item)
+      if (!result.success) {
+        console.warn("[audit-store] Skipping invalid audit record:", result.error.flatten())
+      }
+      return result.success
+    }) as ReleaseAudit[]
   } catch {
     return []
   }

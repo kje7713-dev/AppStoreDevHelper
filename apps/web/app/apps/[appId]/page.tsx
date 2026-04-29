@@ -58,7 +58,7 @@ export default function AppDetailPage() {
           setLatestAudit(audits[0])
         }
       })
-      .catch(() => {})
+      .catch((err) => { console.error("[AppDetailPage] Failed to load app or audits:", err) })
       .finally(() => setLoading(false))
   }, [appId])
 

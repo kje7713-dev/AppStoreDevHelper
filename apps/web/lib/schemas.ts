@@ -48,3 +48,23 @@ export const ReleaseAuditInputSchema = z.object({
 export type CreateAppProfileInput = z.infer<typeof CreateAppProfileSchema>
 export type UpdateAppProfileInput = z.infer<typeof UpdateAppProfileSchema>
 export type ReleaseAuditInput = z.infer<typeof ReleaseAuditInputSchema>
+
+// ── StoreKit Diagnostics ──────────────────────────────────────────────────────
+
+export const StoreKitDiagnosticsInputSchema = z.object({
+  productIds: z.array(z.string()).default([]),
+  usesSubscriptions: z.boolean(),
+  usesConsumables: z.boolean(),
+  usesNonConsumables: z.boolean(),
+  hasFreeTrial: z.boolean(),
+  hasIntroOffer: z.boolean(),
+  restorePurchaseImplemented: z.boolean(),
+  paywallLocation: z.string().min(1, "paywallLocation is required").max(500),
+  knownStoreKitIssue: z.string().max(2000).optional(),
+  previousAppReviewIssue: z.string().max(2000).optional(),
+  reviewerTestingPath: z.string().max(2000).optional(),
+  usesStoreKit2: z.boolean().optional(),
+  hasServerReceiptValidation: z.boolean().optional(),
+})
+
+export type StoreKitDiagnosticsInput = z.infer<typeof StoreKitDiagnosticsInputSchema>

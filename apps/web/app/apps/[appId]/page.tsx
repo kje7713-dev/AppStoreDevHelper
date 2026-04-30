@@ -88,6 +88,22 @@ export default function AppDetailPage() {
           </Link>
         </div>
 
+        {/* StoreKit Diagnostics */}
+        <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">StoreKit Diagnostics</h2>
+              <p className="text-sm text-gray-400">Generate a reviewer-safe diagnostics spec and implementation checklist for IAP &amp; subscriptions.</p>
+            </div>
+            <Link
+              href={`/apps/${appId}/storekit`}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-700 shrink-0 ml-4"
+            >
+              StoreKit Diagnostics →
+            </Link>
+          </div>
+        </div>
+
         {/* Latest Audit Summary */}
         {latestAudit && (
           <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-8">

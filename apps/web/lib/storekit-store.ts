@@ -6,6 +6,8 @@ import type { StoreKitDiagnosticsSpec } from "./types"
 // File-based JSON storage for StoreKit diagnostics specs.
 // Data lives at <project-root>/.data/storekit-specs.json.
 // NOTE: This is a simple local store for the MVP. Replace with a database for production.
+// Limitations: no atomic writes (race conditions possible under concurrent requests),
+// no transaction support, and unbounded file growth for long-running instances.
 
 const DATA_DIR = join(process.cwd(), ".data")
 const SPECS_FILE = join(DATA_DIR, "storekit-specs.json")

@@ -115,7 +115,6 @@ function computeRiskLevel(
   if (usesIAP && !input.restorePurchaseImplemented) return "high"
   if (input.previousAppReviewIssue) return "high"
   if (input.knownStoreKitIssue) return "medium"
-  if (input.hasFreeTrial && !input.hasIntroOffer) return "medium"
   if (!input.usesStoreKit2 && !input.hasServerReceiptValidation && usesIAP) return "medium"
   return "low"
 }
@@ -161,7 +160,7 @@ function buildRequiredDiagnostics(
     },
   ]
 
-  if (!input.restorePurchaseImplemented || input.usesSubscriptions || input.usesNonConsumables) {
+  if (input.usesSubscriptions || input.usesNonConsumables || !input.restorePurchaseImplemented) {
     fields.push({
       field: "restorePurchaseResult",
       displayLabel: "Restore Purchase Result",
@@ -434,7 +433,7 @@ function buildSwiftImplementationNotes(
     )
     if (input.hasFreeTrial || input.hasIntroOffer) {
       notes.push(
-        "Use `product.subscription?.introductoryOffer` and `product.subscription?.isEligibleForIntroOffer` (iOS 17+) to determine trial eligibility."
+        "Use `product.subscription?.introductoryOffer` and `product.subscription?.isEligibleForIntroOffer` to determine trial eligibility (requires iOS 17+; use `product.subscription?.introductoryOffer` alone for eligibility display on earlier versions)."
       )
     }
   } else {

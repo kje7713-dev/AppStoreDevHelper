@@ -88,7 +88,7 @@ Use this pattern for all new pages:
 ## Form Fields
 
 - All `<input>` and `<textarea>` elements must have `w-full` width.
-- Minimum font size for inputs: `text-sm` (14px). Never smaller on form elements — iOS will zoom in on inputs smaller than 16px.
+- Minimum font size for inputs: `text-base` (16px). iOS Safari automatically zooms in on form fields with a font size below 16px, disrupting the layout. Use `text-sm` only for non-interactive text, never for `<input>` or `<textarea>` elements.
 - Labels must always be visible above the field, not only as placeholder text.
 - Required fields must be marked visually (e.g., `<span className="text-red-400">*</span>`).
 

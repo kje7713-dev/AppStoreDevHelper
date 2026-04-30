@@ -325,7 +325,7 @@ function buildDescriptions(
       "DESIGNED FOR IOS",
       `${appName} is optimized for iPhone and iPad, with a native interface that feels right at home.`,
       "",
-      "Download ${appName} and start today.",
+      `Download ${appName} and start today.`,
     ].join("\n"),
     ASO_LIMITS.description
   )

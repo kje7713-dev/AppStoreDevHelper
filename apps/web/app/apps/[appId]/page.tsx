@@ -38,6 +38,35 @@ const riskColor = (score: number) => {
   return "text-red-400"
 }
 
+type WorkspaceCardProps = {
+  href: string
+  emoji: string
+  title: string
+  description: string
+  cta: string
+  accent?: boolean
+}
+
+function WorkspaceCard({ href, emoji, title, description, cta, accent }: WorkspaceCardProps) {
+  return (
+    <Link
+      href={href}
+      className={`flex flex-col gap-3 p-5 rounded-xl border transition-colors ${
+        accent
+          ? "bg-indigo-600 border-indigo-500 hover:bg-indigo-700"
+          : "bg-gray-900 border-gray-800 hover:border-indigo-500"
+      }`}
+    >
+      <div className="text-2xl">{emoji}</div>
+      <div>
+        <h2 className="font-semibold mb-1">{title}</h2>
+        <p className={`text-sm ${accent ? "text-indigo-200" : "text-gray-400"}`}>{description}</p>
+      </div>
+      <span className={`text-sm font-medium mt-auto ${accent ? "text-white" : "text-indigo-400"}`}>{cta} →</span>
+    </Link>
+  )
+}
+
 export default function AppDetailPage() {
   const params = useParams()
   const appId = params.appId as string
@@ -67,113 +96,121 @@ export default function AppDetailPage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <Link href="/apps" className="text-gray-400 text-sm hover:text-white mb-6 block">← Back to Apps</Link>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <Link href="/apps" className="text-gray-400 text-sm mb-6 block py-1">← Back to Apps</Link>
 
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">{app.name}</h1>
-            {app.bundleId && <p className="text-gray-400 mt-1">{app.bundleId}</p>}
-            <div className="flex gap-3 mt-3">
-              {app.category && <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300">{app.category}</span>}
-              {app.businessModel && <span className="text-xs px-2 py-1 rounded-full bg-indigo-900 text-indigo-300">{app.businessModel}</span>}
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300">iOS</span>
-            </div>
-          </div>
-          <Link
-            href={`/apps/${appId}/audit`}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium transition-colors"
-          >
-            Run Release Audit →
-          </Link>
-        </div>
-
-        {/* StoreKit Diagnostics */}
-        <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">StoreKit Diagnostics</h2>
-              <p className="text-sm text-gray-400">Generate a reviewer-safe diagnostics spec and implementation checklist for IAP &amp; subscriptions.</p>
-            </div>
-            <Link
-              href={`/apps/${appId}/storekit`}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-700 shrink-0 ml-4"
-            >
-              StoreKit Diagnostics →
-            </Link>
+        {/* App header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold break-words">{app.name}</h1>
+          {app.bundleId && <p className="text-gray-400 mt-1 text-sm">{app.bundleId}</p>}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {app.category && <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300">{app.category}</span>}
+            {app.businessModel && <span className="text-xs px-2 py-1 rounded-full bg-indigo-900 text-indigo-300">{app.businessModel}</span>}
+            <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300">iOS</span>
           </div>
         </div>
 
-        {/* Latest Audit Summary */}
+        {/* Latest audit summary banner */}
         {latestAudit && (
-          <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Latest Audit</h2>
-              <Link
-                href={`/apps/${appId}/audit/results/${latestAudit.id}`}
-                className="text-xs text-indigo-400 hover:text-indigo-300"
-              >
-                View full results →
+          <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Latest Audit</span>
+              <Link href={`/apps/${appId}/audit/results/${latestAudit.id}`} className="text-xs text-indigo-400">
+                View results →
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              <span className={`text-4xl font-bold ${riskColor(latestAudit.releaseRiskScore)}`}>
+              <span className={`text-4xl font-bold tabular-nums ${riskColor(latestAudit.releaseRiskScore)}`}>
                 {latestAudit.releaseRiskScore}
               </span>
-              <div>
-                <p className="text-sm text-gray-300 mb-1">{latestAudit.summary}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-gray-300 mb-1 break-words">{latestAudit.summary}</p>
                 <p className="text-xs text-gray-500">{new Date(latestAudit.createdAt).toLocaleString()}</p>
               </div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Workspace cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <WorkspaceCard
+            href={`/apps/${appId}/audit`}
+            emoji="🔍"
+            title="Release Audit"
+            description="Score your release risk and get a prioritized issue list before submission."
+            cta="Run audit"
+            accent
+          />
+          <WorkspaceCard
+            href={`/apps/${appId}/storekit`}
+            emoji="🛒"
+            title="StoreKit Diagnostics"
+            description="Generate a reviewer-safe diagnostics spec and IAP implementation checklist."
+            cta="Open diagnostics"
+          />
+          <WorkspaceCard
+            href={`/apps/${appId}/audits`}
+            emoji="📋"
+            title="Audit History"
+            description="View all saved audits for this app, newest first."
+            cta="View history"
+          />
+          <WorkspaceCard
+            href={`/apps/${appId}/api`}
+            emoji="⚡"
+            title="API Usage"
+            description="Copyable cURL examples for every endpoint. Use from scripts or agents."
+            cta="View API docs"
+          />
+        </div>
+
+        {/* App details */}
+        <div className="space-y-4">
           {app.targetAudience && (
-            <div className="p-5 rounded-xl bg-gray-900 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">Target Audience</h3>
-              <p>{app.targetAudience}</p>
+            <div className="p-4 rounded-xl bg-gray-900 border border-gray-800">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Target Audience</h3>
+              <p className="text-sm">{app.targetAudience}</p>
             </div>
           )}
           {app.appStoreUrl && (
-            <div className="p-5 rounded-xl bg-gray-900 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">App Store URL</h3>
-              <a href={app.appStoreUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 break-all text-sm">{app.appStoreUrl}</a>
+            <div className="p-4 rounded-xl bg-gray-900 border border-gray-800">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">App Store URL</h3>
+              <a href={app.appStoreUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 break-all text-sm">{app.appStoreUrl}</a>
+            </div>
+          )}
+
+          {app.currentMetadata && (
+            <div className="rounded-xl bg-gray-900 border border-gray-800 p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-4">App Store Metadata</h2>
+              <div className="space-y-4">
+                {app.currentMetadata.subtitle && (
+                  <div>
+                    <h3 className="text-xs font-medium text-gray-500 mb-1">Subtitle</h3>
+                    <p className="text-sm">{app.currentMetadata.subtitle}</p>
+                  </div>
+                )}
+                {app.currentMetadata.description && (
+                  <div>
+                    <h3 className="text-xs font-medium text-gray-500 mb-1">Description</h3>
+                    <p className="text-sm whitespace-pre-wrap text-gray-300">{app.currentMetadata.description}</p>
+                  </div>
+                )}
+                {app.currentMetadata.keywords && (
+                  <div>
+                    <h3 className="text-xs font-medium text-gray-500 mb-1">Keywords</h3>
+                    <p className="text-sm text-gray-300">{app.currentMetadata.keywords}</p>
+                  </div>
+                )}
+                {app.currentMetadata.promotionalText && (
+                  <div>
+                    <h3 className="text-xs font-medium text-gray-500 mb-1">Promotional Text</h3>
+                    <p className="text-sm text-gray-300">{app.currentMetadata.promotionalText}</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-
-        {app.currentMetadata && (
-          <div className="rounded-xl bg-gray-900 border border-gray-800 p-6">
-            <h2 className="text-lg font-semibold mb-4">App Store Metadata</h2>
-            <div className="space-y-4">
-              {app.currentMetadata.subtitle && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-1">Subtitle</h3>
-                  <p>{app.currentMetadata.subtitle}</p>
-                </div>
-              )}
-              {app.currentMetadata.description && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-1">Description</h3>
-                  <p className="text-sm whitespace-pre-wrap">{app.currentMetadata.description}</p>
-                </div>
-              )}
-              {app.currentMetadata.keywords && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-1">Keywords</h3>
-                  <p className="text-sm">{app.currentMetadata.keywords}</p>
-                </div>
-              )}
-              {app.currentMetadata.promotionalText && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-1">Promotional Text</h3>
-                  <p className="text-sm">{app.currentMetadata.promotionalText}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </main>
   )

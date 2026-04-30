@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { apps } from "@/lib/store"
+import { getApp } from "@/lib/app-store"
 import { getAuditsForApp } from "@/lib/audit-store"
 
 export async function GET(
@@ -7,6 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
-  if (!apps.get(appId)) return NextResponse.json({ error: "App not found" }, { status: 404 })
+  if (!getApp(appId)) return NextResponse.json({ error: "App not found" }, { status: 404 })
   return NextResponse.json(getAuditsForApp(appId))
 }

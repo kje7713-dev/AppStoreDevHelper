@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { apps } from "@/lib/store"
+import { getApp } from "@/lib/app-store"
 import { saveAudit } from "@/lib/audit-store"
 import { ReleaseAuditInputSchema } from "@/lib/schemas"
 import { generateMockAudit, type AuditInput } from "@core/release-audit"
@@ -98,7 +98,7 @@ export async function POST(
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
-  const app = apps.get(appId)
+  const app = getApp(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 
   const body = await req.json()

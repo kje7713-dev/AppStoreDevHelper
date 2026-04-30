@@ -1,44 +1,8 @@
 import { describe, it, expect } from "vitest"
-import { z } from "zod"
-
-// ── Inline schema definitions for root-level tests ─────────────────────────────
-// (Mirrors apps/web/lib/schemas.ts without needing the Next.js app context)
-
-const AppMetadataSchema = z.object({
-  subtitle: z.string().max(30).optional(),
-  promotionalText: z.string().max(170).optional(),
-  description: z.string().max(4000).optional(),
-  keywords: z.string().max(100).optional(),
-  releaseNotes: z.string().max(4000).optional(),
-})
-
-const CreateAppProfileSchema = z.object({
-  name: z.string().min(1, "name is required").max(200),
-  bundleId: z
-    .string()
-    .regex(/^[a-zA-Z0-9\-\.]+$/, "Invalid bundle ID format")
-    .optional(),
-  appStoreUrl: z
-    .string()
-    .url("Invalid App Store URL")
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => v || undefined),
-  category: z.string().max(100).optional(),
-  targetAudience: z.string().max(500).optional(),
-  businessModel: z
-    .enum(["free", "paid", "subscription", "iap", "freemium"])
-    .optional(),
-  currentMetadata: AppMetadataSchema.optional(),
-})
-
-const ReleaseAuditInputSchema = z.object({
-  latestChanges: z.string().min(1, "latestChanges is required").max(10000),
-  knownIssues: z.string().max(5000).optional(),
-  testFlightNotes: z.string().max(5000).optional(),
-  reviewerNotes: z.string().max(5000).optional(),
-  previousRejectionText: z.string().max(5000).optional(),
-})
+import {
+  CreateAppProfileSchema,
+  ReleaseAuditInputSchema,
+} from "@web/lib/schemas"
 
 // ── App Profile Schema tests ───────────────────────────────────────────────────
 

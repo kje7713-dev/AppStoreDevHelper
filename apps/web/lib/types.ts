@@ -82,3 +82,29 @@ export type StoreKitDiagnosticsSpec = {
   swiftImplementationNotes: string[]
   createdAt: string
 }
+
+// ── App Review Response ───────────────────────────────────────────────────────
+
+export type AppReviewIssueType =
+  | "StoreKit"
+  | "Metadata"
+  | "Crash"
+  | "Login"
+  | "Privacy"
+  | "Guideline"
+  | "Performance"
+  | "Other"
+
+export type AppReviewResponse = {
+  id: string
+  appId: string
+  summary: string
+  detectedIssueType: AppReviewIssueType
+  riskLevel: "low" | "medium" | "high"
+  appReviewResponse: string
+  reviewerTestingInstructions: string
+  resubmissionNotes: string
+  internalTasks: GithubTask[]
+  missingInfo: string[]
+  createdAt: string
+}

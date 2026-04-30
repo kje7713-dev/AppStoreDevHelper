@@ -142,6 +142,13 @@ export default function AppDetailPage() {
             accent
           />
           <WorkspaceCard
+            href={`/apps/${appId}/app-review`}
+            emoji="✉️"
+            title="App Review Response"
+            description="Generate a professional response to Apple rejection messages, with testing instructions and internal tasks."
+            cta="Respond to rejection"
+          />
+          <WorkspaceCard
             href={`/apps/${appId}/storekit`}
             emoji="🛒"
             title="StoreKit Diagnostics"

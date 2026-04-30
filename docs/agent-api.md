@@ -177,6 +177,79 @@ GET /api/audits/:auditId
 
 ---
 
+### Generate App Review response
+
+```
+POST /api/apps/:appId/app-review/response
+Content-Type: application/json
+```
+
+**Request body:**
+
+```json
+{
+  "rejectionText": "We noticed that your app includes in-app purchases, but the products were unavailable during our review.",
+  "guideline": "Guideline 3.1.1 – In-App Purchase",
+  "buildNumber": "142",
+  "appVersion": "2.1.0",
+  "deviceInfo": "iPhone 15 Pro, iOS 17.4",
+  "reviewerIssueSummary": "Reviewer could not load IAP products",
+  "stepsAlreadyTaken": "Confirmed product IDs are active in App Store Connect. Added a debug panel showing StoreKit status.",
+  "testingInstructions": "1. Launch the app. 2. Tap Upgrade on the home screen. 3. Select Monthly plan. 4. Complete purchase in sandbox.",
+  "demoAccount": "demo@example.com / Demo1234",
+  "knownContext": "Products are only available after the user completes onboarding.",
+  "desiredTone": "professional"
+}
+```
+
+**Required fields:** `rejectionText`.
+
+**Optional fields:** `guideline`, `buildNumber`, `appVersion`, `deviceInfo`, `reviewerIssueSummary`, `stepsAlreadyTaken`, `testingInstructions`, `demoAccount`, `knownContext`, `desiredTone` (defaults to `"professional"`).
+
+**`desiredTone` values:** `"professional"` | `"concise"` | `"technical"` | `"firm"`
+
+**Response:** `AppReviewResponse` object:
+
+```json
+{
+  "id": "uuid",
+  "appId": "uuid",
+  "summary": "StoreKit rejection detected. Risk level: high. Response is ready for submission.",
+  "detectedIssueType": "StoreKit",
+  "riskLevel": "high",
+  "appReviewResponse": "Thank you for taking the time to review our app...",
+  "reviewerTestingInstructions": "Version: 2.1.0 | Build: 142\n\n1. Launch the app using a sandbox Apple ID...",
+  "resubmissionNotes": "## Resubmission Checklist\n\n- [ ] Confirm fix addresses Guideline 3.1.1...",
+  "internalTasks": [
+    {
+      "title": "[AppReview] Fix StoreKit rejection (Guideline 3.1.1 – In-App Purchase)",
+      "priority": "high",
+      "summary": "Address the App Review rejection...",
+      "acceptanceCriteria": [
+        "Products load correctly in sandbox environment",
+        "Purchase flow completes without error"
+      ],
+      "labels": ["app-review", "storekit", "high"]
+    }
+  ],
+  "missingInfo": [],
+  "createdAt": "2025-06-01T12:00:00.000Z"
+}
+```
+
+**`detectedIssueType` values:** `StoreKit` | `Metadata` | `Crash` | `Login` | `Privacy` | `Guideline` | `Performance` | `Other`
+
+**`riskLevel` values:** `low` | `medium` | `high`
+
+**Important behavior:**
+- If `rejectionText` is missing, returns `400`.
+- If `stepsAlreadyTaken` is empty, `missingInfo` will include a prompt asking what changed before resubmission.
+- If `testingInstructions` is empty, `missingInfo` will include a prompt asking for the reviewer testing path.
+- The response never sounds hostile toward Apple.
+- The response will not claim a fix was made unless `stepsAlreadyTaken` is provided.
+
+---
+
 ### Generate StoreKit diagnostics spec
 
 ```

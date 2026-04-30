@@ -68,3 +68,21 @@ export const StoreKitDiagnosticsInputSchema = z.object({
 })
 
 export type StoreKitDiagnosticsInput = z.infer<typeof StoreKitDiagnosticsInputSchema>
+
+// ── App Review Response ───────────────────────────────────────────────────────
+
+export const AppReviewResponseInputSchema = z.object({
+  rejectionText: z.string().min(1, "rejectionText is required").max(10000),
+  guideline: z.string().max(200).optional(),
+  buildNumber: z.string().max(50).optional(),
+  appVersion: z.string().max(50).optional(),
+  deviceInfo: z.string().max(200).optional(),
+  reviewerIssueSummary: z.string().max(2000).optional(),
+  stepsAlreadyTaken: z.string().max(5000).optional(),
+  testingInstructions: z.string().max(5000).optional(),
+  demoAccount: z.string().max(500).optional(),
+  knownContext: z.string().max(5000).optional(),
+  desiredTone: z.enum(["professional", "concise", "technical", "firm"]).default("professional"),
+})
+
+export type AppReviewResponseInput = z.infer<typeof AppReviewResponseInputSchema>

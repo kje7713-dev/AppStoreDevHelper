@@ -86,3 +86,23 @@ export const AppReviewResponseInputSchema = z.object({
 })
 
 export type AppReviewResponseInput = z.infer<typeof AppReviewResponseInputSchema>
+
+// ── ASO Metadata Generator ────────────────────────────────────────────────────
+
+export const AsoGenerateInputSchema = z.object({
+  appName: z.string().max(200).optional(),
+  category: z.string().max(100).optional(),
+  targetAudience: z.string().max(500).optional(),
+  primaryBenefit: z.string().max(500).optional(),
+  differentiators: z.array(z.string().max(200)).max(10).optional(),
+  competitorApps: z.array(z.string().max(100)).max(10).optional(),
+  currentSubtitle: z.string().max(30).optional(),
+  currentKeywords: z.string().max(100).optional(),
+  currentPromotionalText: z.string().max(170).optional(),
+  currentDescription: z.string().max(4000).optional(),
+  tone: z.enum(["professional", "direct", "bold", "minimal"]).default("professional"),
+  includeNegativeKeywords: z.boolean().optional(),
+  localization: z.enum(["none", "starter"]).optional(),
+})
+
+export type AsoGenerateInput = z.infer<typeof AsoGenerateInputSchema>

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
-import { apps, AppProfile } from "@/lib/store"
+import { listApps, saveApp } from "@/lib/app-store"
 import { CreateAppProfileSchema } from "@/lib/schemas"
+import type { AppProfile } from "@/lib/types"
 
 export async function GET() {
-  return NextResponse.json(Array.from(apps.values()))
+  return NextResponse.json(listApps())
 }
 
 export async function POST(req: NextRequest) {
@@ -27,6 +28,6 @@ export async function POST(req: NextRequest) {
     updatedAt: now,
   }
 
-  apps.set(app.id, app)
+  saveApp(app)
   return NextResponse.json(app, { status: 201 })
 }

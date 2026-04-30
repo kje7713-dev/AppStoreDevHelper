@@ -28,7 +28,7 @@ function clamp(text: string, limit: number): string {
   // Trim at last word boundary within limit
   const trimmed = text.slice(0, limit)
   const lastSpace = trimmed.lastIndexOf(" ")
-  return lastSpace > limit * 0.5 ? trimmed.slice(0, lastSpace).trimEnd() : trimmed
+  return lastSpace > 0 ? trimmed.slice(0, lastSpace).trimEnd() : trimmed
 }
 
 function charCount(text: string): number {

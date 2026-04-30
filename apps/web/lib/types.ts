@@ -52,3 +52,33 @@ export type ReleaseAudit = {
   githubTasks: GithubTask[]
   createdAt: string
 }
+
+// ── StoreKit Diagnostics ──────────────────────────────────────────────────────
+
+export type DiagnosticField = {
+  field: string
+  description: string
+  displayLabel: string
+}
+
+export type ImplementationChecklistItem = {
+  id: string
+  category: string
+  task: string
+  priority: "required" | "recommended" | "conditional"
+  rationale: string
+}
+
+export type StoreKitDiagnosticsSpec = {
+  id: string
+  appId: string
+  summary: string
+  riskLevel: "low" | "medium" | "high"
+  requiredDiagnostics: DiagnosticField[]
+  reviewerSafeDisplayFields: DiagnosticField[]
+  implementationChecklist: ImplementationChecklistItem[]
+  appReviewNotes: string
+  githubTask: GithubTask
+  swiftImplementationNotes: string[]
+  createdAt: string
+}

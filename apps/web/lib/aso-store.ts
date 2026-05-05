@@ -10,18 +10,35 @@ import type { AsoOutput } from "./types"
 const DATA_DIR = join(process.cwd(), ".data")
 const ASO_FILE = join(DATA_DIR, "aso-outputs.json")
 
+const GithubTaskSchema = z.object({
+  title: z.string(),
+  priority: z.enum(["low", "medium", "high"]),
+  summary: z.string(),
+  acceptanceCriteria: z.array(z.string()),
+  labels: z.array(z.string()).optional(),
+})
+
+const AsoTextOptionSchema = z.object({
+  text: z.string(),
+  charCount: z.number(),
+})
+
 const StoredAsoSchema = z.object({
   id: z.string(),
   appId: z.string(),
   summary: z.string(),
-  subtitleOptions: z.array(z.unknown()),
-  promotionalTextOptions: z.array(z.unknown()),
-  keywordFieldOptions: z.array(z.unknown()),
-  descriptionOptions: z.array(z.unknown()),
-  releaseNotesOptions: z.array(z.unknown()),
+  subtitleOptions: z.array(AsoTextOptionSchema),
+  promotionalTextOptions: z.array(AsoTextOptionSchema),
+  keywordFieldOptions: z.array(
+    z.object({ text: z.string(), charCount: z.number(), keywords: z.array(z.string()) })
+  ),
+  descriptionOptions: z.array(
+    z.object({ name: z.string(), text: z.string(), charCount: z.number() })
+  ),
+  releaseNotesOptions: z.array(AsoTextOptionSchema),
   warnings: z.array(z.string()),
   negativeKeywords: z.array(z.string()),
-  githubTask: z.unknown(),
+  githubTask: GithubTaskSchema,
   createdAt: z.string(),
 })
 

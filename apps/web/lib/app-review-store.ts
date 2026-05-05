@@ -28,7 +28,15 @@ const StoredReviewSchema = z.object({
   appReviewResponse: z.string(),
   reviewerTestingInstructions: z.string(),
   resubmissionNotes: z.string(),
-  internalTasks: z.array(z.unknown()),
+  internalTasks: z.array(
+    z.object({
+      title: z.string(),
+      priority: z.enum(["low", "medium", "high"]),
+      summary: z.string(),
+      acceptanceCriteria: z.array(z.string()),
+      labels: z.array(z.string()).optional(),
+    })
+  ),
   missingInfo: z.array(z.string()),
   createdAt: z.string(),
 })

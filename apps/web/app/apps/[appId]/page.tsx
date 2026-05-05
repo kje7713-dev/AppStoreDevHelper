@@ -134,6 +134,13 @@ export default function AppDetailPage() {
         {/* Workspace cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <WorkspaceCard
+            href={`/apps/${appId}/aso`}
+            emoji="✏️"
+            title="ASO Metadata"
+            description="Generate App Store subtitles, keywords, descriptions, and release notes within Apple's strict character limits."
+            cta="Generate metadata"
+          />
+          <WorkspaceCard
             href={`/apps/${appId}/audit`}
             emoji="🔍"
             title="Release Audit"

@@ -293,6 +293,100 @@ Content-Type: application/json
 
 ---
 
+### Generate ASO metadata
+
+```
+POST /api/apps/:appId/aso/generate
+Content-Type: application/json
+```
+
+**Request body:**
+
+```json
+{
+  "appName": "Focusly",
+  "category": "Productivity",
+  "targetAudience": "Indie developers",
+  "primaryBenefit": "Ship faster with fewer App Review rejections",
+  "differentiators": ["Offline-first", "No account required", "Privacy focused"],
+  "competitorApps": ["Notion", "Trello"],
+  "currentSubtitle": "Dev toolkit",
+  "currentKeywords": "ios,dev,tools,swift",
+  "currentPromotionalText": "Try free for 7 days!",
+  "currentDescription": "A great app for developers.",
+  "tone": "professional",
+  "includeNegativeKeywords": true,
+  "localization": "none"
+}
+```
+
+**Required fields:** none — all fields are optional. If `appName` is omitted, the app profile name is used.
+
+**Optional fields:** all fields above.
+
+**`tone` values:** `"professional"` | `"direct"` | `"bold"` | `"minimal"`
+
+**`localization` values:** `"none"` | `"starter"`
+
+**Response:** `AsoOutput` object:
+
+```json
+{
+  "id": "uuid",
+  "appId": "uuid",
+  "summary": "Generated ASO metadata for \"Focusly\". 3 subtitle option(s), 2 description option(s).",
+  "subtitleOptions": [
+    { "text": "Productivity for devs", "charCount": 21 }
+  ],
+  "promotionalTextOptions": [
+    { "text": "Focusly helps indie developers ship faster with fewer rejections.", "charCount": 65 }
+  ],
+  "keywordFieldOptions": [
+    { "text": "ios,dev,tools,swift,productivity", "charCount": 31, "keywords": ["ios", "dev", "tools", "swift", "productivity"] }
+  ],
+  "descriptionOptions": [
+    { "name": "Short", "text": "Focusly is a productivity app built for indie developers...", "charCount": 312 },
+    { "name": "Full", "text": "Focusly is a productivity app designed to help indie developers...", "charCount": 487 }
+  ],
+  "releaseNotesOptions": [
+    { "text": "Bug fixes and performance improvements.", "charCount": 38 },
+    { "text": "WHAT'S NEW\n\n• Performance improvements...", "charCount": 120 }
+  ],
+  "warnings": [],
+  "negativeKeywords": ["free", "best", "#1", "top", "cheap"],
+  "githubTask": {
+    "title": "[ASO] Update App Store metadata for Focusly",
+    "priority": "medium",
+    "summary": "Apply generated ASO metadata to App Store Connect...",
+    "acceptanceCriteria": [
+      "Subtitle is updated in App Store Connect (max 30 chars)",
+      "Promotional text is updated (max 170 chars)"
+    ],
+    "labels": ["aso", "app-store", "metadata"]
+  },
+  "createdAt": "2025-06-01T12:00:00.000Z"
+}
+```
+
+**Strict character limits enforced:**
+- `subtitleOptions[].text` — max 30 characters
+- `promotionalTextOptions[].text` — max 170 characters
+- `keywordFieldOptions[].text` — max 100 characters (comma-separated)
+- `descriptionOptions[].text` — max 4000 characters
+- `releaseNotesOptions[].text` — max 4000 characters
+
+**Important behavior:**
+- No generated field will exceed Apple's character limits.
+- `charCount` is included on every generated text option.
+- If generated text is near a limit (≥90%), a warning is added to `warnings`.
+- If `appName` is omitted, the app profile's name is used.
+- If current metadata fields are present on the app profile, they are used as context.
+- Keyword field is comma-separated with no spaces after commas.
+- If `includeNegativeKeywords` is `true`, `negativeKeywords` contains terms to avoid.
+- No competitor scraping, no external API calls, no Apple Search Ads integration.
+
+---
+
 ## Recommended Agent Workflow
 
 An agent can complete a full release check cycle with these steps:

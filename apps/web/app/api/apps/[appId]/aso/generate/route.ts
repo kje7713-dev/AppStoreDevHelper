@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getApp } from "@/lib/app-store"
 import { AsoGenerateInputSchema } from "@/lib/schemas"
+import { saveAsoOutput } from "@/lib/aso-store"
 import { generateAsoMetadata } from "@core/aso"
 
 export async function POST(
@@ -21,5 +22,6 @@ export async function POST(
   }
 
   const result = generateAsoMetadata(appId, parsed.data, app)
+  saveAsoOutput(result)
   return NextResponse.json(result, { status: 201 })
 }

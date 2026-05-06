@@ -170,6 +170,14 @@ export default function AppDetailPage() {
             cta="View history"
           />
           <WorkspaceCard
+            href={`/apps/${appId}/tasks`}
+            emoji="📦"
+            title="GitHub Task Bundle"
+            description="Collect tasks from audits, StoreKit diagnostics, App Review responses, and ASO metadata into a single GitHub-ready export."
+            cta="Generate bundle"
+            accent
+          />
+          <WorkspaceCard
             href={`/apps/${appId}/api`}
             emoji="⚡"
             title="API Usage"

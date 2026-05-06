@@ -106,3 +106,21 @@ export const AsoGenerateInputSchema = z.object({
 })
 
 export type AsoGenerateInput = z.infer<typeof AsoGenerateInputSchema>
+
+// ── Task Bundle ───────────────────────────────────────────────────────────────
+
+export const TaskBundleInputSchema = z.object({
+  includeReleaseAuditTasks: z.boolean().default(true),
+  includeStoreKitTasks: z.boolean().default(true),
+  includeAppReviewTasks: z.boolean().default(true),
+  includeAsoTasks: z.boolean().default(true),
+  releaseAuditId: z.string().optional(),
+  storeKitSpecId: z.string().optional(),
+  appReviewResponseId: z.string().optional(),
+  asoOutputId: z.string().optional(),
+  priorityFloor: z.enum(["low", "medium", "high"]).optional(),
+  labelPrefix: z.string().max(50).optional(),
+  agentMode: z.boolean().optional(),
+})
+
+export type TaskBundleInput = z.infer<typeof TaskBundleInputSchema>

@@ -108,3 +108,37 @@ export type AppReviewResponse = {
   missingInfo: string[]
   createdAt: string
 }
+
+// ── ASO Output ────────────────────────────────────────────────────────────────
+
+export type AsoTextOption = {
+  text: string
+  charCount: number
+}
+
+export type AsoKeywordOption = {
+  text: string
+  charCount: number
+  keywords: string[]
+}
+
+export type AsoDescriptionOption = {
+  name: string
+  text: string
+  charCount: number
+}
+
+export type AsoOutput = {
+  id: string
+  appId: string
+  summary: string
+  subtitleOptions: AsoTextOption[]
+  promotionalTextOptions: AsoTextOption[]
+  keywordFieldOptions: AsoKeywordOption[]
+  descriptionOptions: AsoDescriptionOption[]
+  releaseNotesOptions: AsoTextOption[]
+  warnings: string[]
+  negativeKeywords: string[]
+  githubTask: GithubTask
+  createdAt: string
+}

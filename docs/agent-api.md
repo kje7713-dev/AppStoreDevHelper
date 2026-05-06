@@ -387,9 +387,92 @@ Content-Type: application/json
 
 ---
 
+### Generate GitHub task bundle
+
+```
+POST /api/apps/:appId/tasks/bundle
+Content-Type: application/json
+```
+
+Collects GitHub-ready tasks from release audits, StoreKit diagnostics, App Review responses, and ASO metadata into a single structured bundle. Uses the latest saved output for each source unless a specific ID is provided.
+
+**Request body:**
+
+```json
+{
+  "includeReleaseAuditTasks": true,
+  "includeStoreKitTasks": true,
+  "includeAppReviewTasks": true,
+  "includeAsoTasks": true,
+  "releaseAuditId": "optional-uuid",
+  "storeKitSpecId": "optional-uuid",
+  "appReviewResponseId": "optional-uuid",
+  "asoOutputId": "optional-uuid",
+  "priorityFloor": "medium",
+  "labelPrefix": "appops",
+  "agentMode": false
+}
+```
+
+**All `include*` booleans default to `true`. All other fields are optional.**
+
+| Field | Type | Description |
+|---|---|---|
+| `includeReleaseAuditTasks` | boolean | Include tasks from the latest release audit |
+| `includeStoreKitTasks` | boolean | Include task from the latest StoreKit diagnostics spec |
+| `includeAppReviewTasks` | boolean | Include tasks from the latest App Review response |
+| `includeAsoTasks` | boolean | Include task from the latest ASO metadata output |
+| `releaseAuditId` | string (optional) | Use a specific release audit by ID |
+| `storeKitSpecId` | string (optional) | Use a specific StoreKit spec by ID |
+| `appReviewResponseId` | string (optional) | Use a specific App Review response by ID |
+| `asoOutputId` | string (optional) | Use a specific ASO output by ID |
+| `priorityFloor` | `"low"` \| `"medium"` \| `"high"` (optional) | Exclude tasks below this priority |
+| `labelPrefix` | string (optional) | Prefix all task labels, e.g. `"appops"` → `"appops/storekit"` |
+| `agentMode` | boolean (optional) | Reserved for future agent-specific behaviour |
+
+**Response:** `TaskBundle` object:
+
+```json
+{
+  "id": "uuid",
+  "appId": "uuid",
+  "summary": "5 task(s) from release-audit, storekit, app-review, aso.",
+  "taskCount": 5,
+  "tasks": [
+    {
+      "title": "[AppReview] Add reviewer notes",
+      "priority": "high",
+      "source": "release-audit",
+      "summary": "Include demo account in App Review notes.",
+      "acceptanceCriteria": [
+        "Reviewer notes include demo credentials",
+        "Notes describe all features"
+      ],
+      "labels": ["app-review", "high"],
+      "markdown": "## [AppReview] Add reviewer notes\n\n**Priority:** high  **Source:** release-audit\n\n..."
+    }
+  ],
+  "bundleMarkdown": "# GitHub Task Bundle\n\n...",
+  "agentImplementationBrief": "## Agent Implementation Brief\n\n...",
+  "createdAt": "2025-06-01T12:00:00.000Z",
+  "warnings": []
+}
+```
+
+**`source` values:** `release-audit` | `storekit` | `app-review` | `aso` | `manual`
+
+**Important behavior:**
+- If a source has no saved output, it is skipped and a warning is added to `warnings`.
+- Tasks with identical (case-insensitive) titles are deduplicated.
+- `tasks[].markdown` is ready to paste directly as a GitHub issue body.
+- `bundleMarkdown` is the full bundle as a single markdown document.
+- `agentImplementationBrief` is a self-contained prompt for a coding agent.
+
+---
+
 ## Recommended Agent Workflow
 
-An agent can complete a full release check cycle with these steps:
+An agent can complete a full release check cycle and export GitHub issues with these steps:
 
 ### Step 1: Create or fetch app profile
 
@@ -445,27 +528,40 @@ curl -X POST "$BASE_URL/api/apps/$APP_ID/storekit/diagnostics-spec" \
   }'
 ```
 
-### Step 5: Export GitHub-ready task markdown
+### Step 5: Generate a GitHub task bundle
 
-Parse `githubTasks` from the audit response. Each task has:
+Collect tasks from all sources into a single exportable bundle:
 
-```json
-{
-  "title": "Add Restore Purchases button",
-  "priority": "high",
-  "summary": "...",
-  "acceptanceCriteria": ["...", "..."],
-  "labels": ["storekit"]
-}
+```bash
+curl -X POST "$BASE_URL/api/apps/$APP_ID/tasks/bundle" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "includeReleaseAuditTasks": true,
+    "includeStoreKitTasks": true,
+    "includeAppReviewTasks": true,
+    "includeAsoTasks": true,
+    "priorityFloor": "medium",
+    "labelPrefix": "appops"
+  }'
 ```
 
-Format these as GitHub issue bodies and POST them to the GitHub Issues API using the label, title, and body fields.
+The response includes `bundleMarkdown` (paste-ready for GitHub) and `agentImplementationBrief` (a single prompt for a coding agent).
 
 ---
 
 ## Data Storage
 
-All data is persisted to `.data/apps.json` and `.data/audits.json` in the project root. These are plain JSON files. Back them up or replace them with a database before deploying to production.
+All data is persisted to `.data/` files in the project root:
+
+| File | Contents |
+|---|---|
+| `.data/apps.json` | App profiles |
+| `.data/audits.json` | Release audit results |
+| `.data/storekit-specs.json` | StoreKit diagnostics specs |
+| `.data/app-review-responses.json` | App Review responses |
+| `.data/aso-outputs.json` | ASO metadata outputs |
+
+These are plain JSON files. Back them up or replace them with a database before deploying to production.
 
 ---
 

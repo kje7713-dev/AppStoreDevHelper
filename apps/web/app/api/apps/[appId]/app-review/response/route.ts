@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getApp } from "@/lib/app-store"
 import { AppReviewResponseInputSchema } from "@/lib/schemas"
+import { saveAppReview } from "@/lib/app-review-store"
 import { generateAppReviewResponse } from "@core/app-review"
 
 export async function POST(
@@ -21,5 +22,6 @@ export async function POST(
   }
 
   const response = generateAppReviewResponse(appId, parsed.data)
+  saveAppReview(response)
   return NextResponse.json(response, { status: 201 })
 }

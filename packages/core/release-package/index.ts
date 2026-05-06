@@ -517,6 +517,8 @@ export function generateReleasePackage(
     id,
     appId,
     releaseName,
+    version: input.version,
+    buildNumber: input.buildNumber,
     summary,
     readinessStatus,
     riskLevel,

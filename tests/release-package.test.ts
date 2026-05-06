@@ -367,11 +367,13 @@ describe("generateReleasePackage", () => {
     const pkg = generateReleasePackage(
       APP_ID,
       APP_NAME,
-      makeInput({ version: "3.0.0" }),
+      makeInput({ version: "3.0.0", buildNumber: "42" }),
       makeSources()
     )
 
     expect(pkg.releaseName).toBe("v3.0.0")
+    expect(pkg.version).toBe("3.0.0")
+    expect(pkg.buildNumber).toBe("42")
   })
 
   it("uses releaseName when provided", () => {

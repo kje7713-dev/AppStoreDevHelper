@@ -579,6 +579,24 @@ The response includes:
 
 ---
 
+### Step 7: Fetch a saved release package by ID
+
+```bash
+curl "$BASE_URL/api/release-packages/$PACKAGE_ID"
+```
+
+Use this to reopen a previously generated package later.
+
+### Step 8: List release packages for an app (newest first)
+
+```bash
+curl "$BASE_URL/api/apps/$APP_ID/release-packages"
+```
+
+The first item in the array is the latest package for that app.
+
+---
+
 ## Endpoints
 
 ### Generate release package
@@ -631,6 +649,8 @@ All `include*` booleans default to `true`. All other fields are optional.
   "id": "uuid",
   "appId": "uuid",
   "releaseName": "v2.1.0",
+  "version": "2.1.0",
+  "buildNumber": "142",
   "summary": "Release is blocked and must not be submitted. 4/5 artifact(s) included. Risk: high. 1 blocking issue(s).",
   "readinessStatus": "blocked",
   "riskLevel": "high",
@@ -717,7 +737,28 @@ All `include*` booleans default to `true`. All other fields are optional.
 - `appReviewSubmissionNotes` priority: `reviewerNotesOverride` → App Review response text → StoreKit `appReviewNotes`
 - `storeKitChecklist` includes only `required` priority items from the StoreKit diagnostics implementation checklist.
 - Task bundles are generated inline from available sources (audit, StoreKit, App Review, ASO) and are not separately persisted.
+- Release packages are persisted to `.data/release-packages.json`.
 - Do not submit anything to App Store Connect automatically.
+
+---
+
+### Get saved release package by ID
+
+```
+GET /api/release-packages/:packageId
+```
+
+**Response:** `ReleasePackage` or `404`.
+
+---
+
+### List saved release packages for an app
+
+```
+GET /api/apps/:appId/release-packages
+```
+
+**Response:** Array of `ReleasePackage` objects, sorted newest first.
 
 ---
 
@@ -732,6 +773,7 @@ All data is persisted to `.data/` files in the project root:
 | `.data/storekit-specs.json` | StoreKit diagnostics specs |
 | `.data/app-review-responses.json` | App Review responses |
 | `.data/aso-outputs.json` | ASO metadata outputs |
+| `.data/release-packages.json` | Saved release packages |
 
 These are plain JSON files. Back them up or replace them with a database before deploying to production.
 

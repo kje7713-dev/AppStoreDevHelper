@@ -32,6 +32,18 @@ type LatestAudit = {
   createdAt: string
 }
 
+type LatestReleasePackage = {
+  id: string
+  releaseName: string
+  version?: string
+  buildNumber?: string
+  readinessStatus: "ready" | "needs-work" | "blocked"
+  riskLevel: "low" | "medium" | "high"
+  includedArtifacts: { included: boolean }[]
+  blockingIssues: string[]
+  createdAt: string
+}
+
 const riskColor = (score: number) => {
   if (score < 30) return "text-green-400"
   if (score < 60) return "text-yellow-400"
@@ -72,6 +84,7 @@ export default function AppDetailPage() {
   const appId = params.appId as string
   const [app, setApp] = useState<AppProfile | null>(null)
   const [latestAudit, setLatestAudit] = useState<LatestAudit | null>(null)
+  const [latestReleasePackage, setLatestReleasePackage] = useState<LatestReleasePackage | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -86,8 +99,15 @@ export default function AppDetailPage() {
         if (Array.isArray(audits) && audits.length > 0) {
           setLatestAudit(audits[0])
         }
+        return fetch(`/api/apps/${appId}/release-packages`)
       })
-      .catch((err) => { console.error("[AppDetailPage] Failed to load app or audits:", err) })
+      .then((r) => r.json())
+      .then((packages: LatestReleasePackage[]) => {
+        if (Array.isArray(packages) && packages.length > 0) {
+          setLatestReleasePackage(packages[0])
+        }
+      })
+      .catch((err) => { console.error("[AppDetailPage] Failed to load app data:", err) })
       .finally(() => setLoading(false))
   }, [appId])
 
@@ -127,6 +147,55 @@ export default function AppDetailPage() {
                 <p className="text-sm text-gray-300 mb-1 break-words">{latestAudit.summary}</p>
                 <p className="text-xs text-gray-500">{new Date(latestAudit.createdAt).toLocaleString()}</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {latestReleasePackage && (
+          <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                Latest Release Package
+              </span>
+              <Link
+                href={`/apps/${appId}/release-packages`}
+                className="text-xs text-indigo-400 py-1"
+              >
+                View history →
+              </Link>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium break-words">{latestReleasePackage.releaseName}</p>
+              {(latestReleasePackage.version || latestReleasePackage.buildNumber) && (
+                <p className="text-xs text-gray-500">
+                  {latestReleasePackage.version ? `v${latestReleasePackage.version}` : ""}
+                  {latestReleasePackage.version && latestReleasePackage.buildNumber ? " · " : ""}
+                  {latestReleasePackage.buildNumber ? `build ${latestReleasePackage.buildNumber}` : ""}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="px-2 py-1 rounded bg-gray-800 text-gray-300">
+                  {latestReleasePackage.readinessStatus}
+                </span>
+                <span className="px-2 py-1 rounded bg-gray-800 text-gray-300">
+                  Risk: {latestReleasePackage.riskLevel}
+                </span>
+                <span className="px-2 py-1 rounded bg-gray-800 text-gray-300">
+                  Artifacts: {latestReleasePackage.includedArtifacts.filter((a) => a.included).length}
+                </span>
+                <span className="px-2 py-1 rounded bg-gray-800 text-gray-300">
+                  Blocking: {latestReleasePackage.blockingIssues.length}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                {new Date(latestReleasePackage.createdAt).toLocaleString()}
+              </p>
+              <Link
+                href={`/apps/${appId}/release-package/results/${latestReleasePackage.id}`}
+                className="inline-block text-sm text-indigo-400 py-1"
+              >
+                Open latest package →
+              </Link>
             </div>
           </div>
         )}
@@ -184,6 +253,13 @@ export default function AppDetailPage() {
             description="Combine audit, StoreKit, App Review response, ASO metadata, and tasks into one submission-ready release packet."
             cta="Generate package"
             accent
+          />
+          <WorkspaceCard
+            href={`/apps/${appId}/release-packages`}
+            emoji="🗂️"
+            title="Release Package History"
+            description="View saved release packages for this app and reopen full packets by ID."
+            cta="View history"
           />
           <WorkspaceCard
             href={`/apps/${appId}/api`}

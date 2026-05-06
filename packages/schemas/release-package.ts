@@ -36,6 +36,8 @@ export type ReleasePackage = {
   id: string
   appId: string
   releaseName: string
+  version?: string
+  buildNumber?: string
   summary: string
   readinessStatus: ReadinessStatus
   riskLevel: RiskLevel

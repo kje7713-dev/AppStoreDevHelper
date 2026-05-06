@@ -5,6 +5,7 @@ import { getLatestAuditForApp } from "@/lib/audit-store"
 import { getSpecsForApp } from "@/lib/storekit-store"
 import { getLatestAppReviewForApp } from "@/lib/app-review-store"
 import { getLatestAsoOutputForApp } from "@/lib/aso-store"
+import { saveReleasePackage } from "@/lib/release-package-store"
 import { generateReleasePackage } from "@core/release-package"
 import { generateTaskBundle } from "@core/tasks"
 
@@ -75,6 +76,8 @@ export async function POST(
         }
       : undefined,
   })
+
+  saveReleasePackage(pkg)
 
   return NextResponse.json(pkg, { status: 201 })
 }

@@ -9,6 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@": resolve(__dirname, "apps/web"),
       "@core": resolve(__dirname, "packages/core"),
       "@schemas": resolve(__dirname, "packages/schemas"),
       "@web": resolve(__dirname, "apps/web"),

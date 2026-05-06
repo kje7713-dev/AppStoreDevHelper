@@ -124,3 +124,22 @@ export const TaskBundleInputSchema = z.object({
 })
 
 export type TaskBundleInput = z.infer<typeof TaskBundleInputSchema>
+
+// ── Release Package ───────────────────────────────────────────────────────────
+
+export const ReleasePackageInputSchema = z.object({
+  releaseName: z.string().max(200).optional(),
+  version: z.string().max(50).optional(),
+  buildNumber: z.string().max(50).optional(),
+  includeLatestAudit: z.boolean().default(true),
+  includeLatestStoreKitSpec: z.boolean().default(true),
+  includeLatestAppReviewResponse: z.boolean().default(true),
+  includeLatestAsoOutput: z.boolean().default(true),
+  includeLatestTaskBundle: z.boolean().default(true),
+  submissionGoal: z.string().max(2000).optional(),
+  reviewerNotesOverride: z.string().max(5000).optional(),
+  internalNotes: z.string().max(5000).optional(),
+  agentMode: z.boolean().optional(),
+})
+
+export type ReleasePackageInput = z.infer<typeof ReleasePackageInputSchema>

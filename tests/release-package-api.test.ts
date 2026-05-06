@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest"
 import { randomUUID } from "crypto"
-import { NextRequest } from "next/server"
 import { saveApp } from "@web/lib/app-store"
 import { POST as createReleasePackage } from "@web/app/api/apps/[appId]/release/package/route"
 import { GET as getReleasePackageById } from "@web/app/api/release-packages/[packageId]/route"
@@ -18,11 +17,17 @@ function makeApp(appId: string) {
 }
 
 function makeCreateRequest(body: Record<string, unknown>) {
-  return new NextRequest("http://localhost/api/test", {
+  return new Request("http://localhost/api/test", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  })
+  }) as unknown as Parameters<typeof createReleasePackage>[0]
+}
+
+function makeReadRequest<T extends (...args: unknown[]) => unknown>(
+  _handler: T
+): Parameters<T>[0] {
+  return new Request("http://localhost") as unknown as Parameters<T>[0]
 }
 
 describe("release package API persistence", () => {
@@ -49,14 +54,14 @@ describe("release package API persistence", () => {
     expect(created.appId).toBe(appId)
     expect(created.version).toBe("1.2.3")
 
-    const getRes = await getReleasePackageById(new NextRequest("http://localhost"), {
+    const getRes = await getReleasePackageById(makeReadRequest(getReleasePackageById), {
       params: Promise.resolve({ packageId: created.id }),
     })
     expect(getRes.status).toBe(200)
     const fetched = (await getRes.json()) as { id: string }
     expect(fetched.id).toBe(created.id)
 
-    const listRes = await listReleasePackagesForApp(new NextRequest("http://localhost"), {
+    const listRes = await listReleasePackagesForApp(makeReadRequest(listReleasePackagesForApp), {
       params: Promise.resolve({ appId }),
     })
     expect(listRes.status).toBe(200)
@@ -92,7 +97,7 @@ describe("release package API persistence", () => {
     const secondRes = await createReleasePackage(secondReq, { params: Promise.resolve({ appId }) })
     const second = (await secondRes.json()) as { id: string }
 
-    const listRes = await listReleasePackagesForApp(new NextRequest("http://localhost"), {
+    const listRes = await listReleasePackagesForApp(makeReadRequest(listReleasePackagesForApp), {
       params: Promise.resolve({ appId }),
     })
     const list = (await listRes.json()) as Array<{ id: string }>
@@ -101,7 +106,7 @@ describe("release package API persistence", () => {
   })
 
   it("returns 404 for unknown package id", async () => {
-    const res = await getReleasePackageById(new NextRequest("http://localhost"), {
+    const res = await getReleasePackageById(makeReadRequest(getReleasePackageById), {
       params: Promise.resolve({ packageId: `missing-${randomUUID()}` }),
     })
     expect(res.status).toBe(404)

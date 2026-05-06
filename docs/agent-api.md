@@ -547,6 +547,178 @@ curl -X POST "$BASE_URL/api/apps/$APP_ID/tasks/bundle" \
 
 The response includes `bundleMarkdown` (paste-ready for GitHub) and `agentImplementationBrief` (a single prompt for a coding agent).
 
+### Step 6: Generate a release package
+
+Combine all the above into a single submission-ready release packet:
+
+```bash
+curl -X POST "$BASE_URL/api/apps/$APP_ID/release/package" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "releaseName": "v2.1.0",
+    "version": "2.1.0",
+    "buildNumber": "142",
+    "includeLatestAudit": true,
+    "includeLatestStoreKitSpec": true,
+    "includeLatestAppReviewResponse": true,
+    "includeLatestAsoOutput": true,
+    "includeLatestTaskBundle": true,
+    "submissionGoal": "Launch dark mode and fix StoreKit rejection."
+  }'
+```
+
+The response includes:
+- `readinessStatus` — `ready` | `needs-work` | `blocked`
+- `riskLevel` — `low` | `medium` | `high`
+- `blockingIssues` — list of issues that must be resolved before submission
+- `recommendedNextActions` — prioritized list of next steps
+- `testFlightChecklist`, `appReviewChecklist`, `storeKitChecklist`, `metadataChecklist` — checklists for each area
+- `appReviewSubmissionNotes` — text to paste into App Store Connect App Review notes
+- `releasePacketMarkdown` — full release packet as a copy-pasteable markdown document
+- `agentExecutionBrief` — a single prompt an agent can use to finish release-prep work
+
+---
+
+## Endpoints
+
+### Generate release package
+
+```
+POST /api/apps/:appId/release/package
+Content-Type: application/json
+```
+
+**Request body:**
+
+```json
+{
+  "releaseName": "v2.1.0",
+  "version": "2.1.0",
+  "buildNumber": "142",
+  "includeLatestAudit": true,
+  "includeLatestStoreKitSpec": true,
+  "includeLatestAppReviewResponse": true,
+  "includeLatestAsoOutput": true,
+  "includeLatestTaskBundle": true,
+  "submissionGoal": "Launch dark mode and fix StoreKit rejection from last submission.",
+  "reviewerNotesOverride": "Optional: override the generated App Review notes with custom text.",
+  "internalNotes": "Internal team notes (not sent to Apple).",
+  "agentMode": false
+}
+```
+
+All `include*` booleans default to `true`. All other fields are optional.
+
+| Field | Type | Description |
+|---|---|---|
+| `releaseName` | string (optional) | Human-readable name for this release (e.g. `"v2.1.0"` or `"Spring Launch"`) |
+| `version` | string (optional) | App version number (e.g. `"2.1.0"`) |
+| `buildNumber` | string (optional) | Build number (e.g. `"142"`) |
+| `includeLatestAudit` | boolean | Include the latest release audit |
+| `includeLatestStoreKitSpec` | boolean | Include the latest StoreKit diagnostics spec |
+| `includeLatestAppReviewResponse` | boolean | Include the latest App Review response |
+| `includeLatestAsoOutput` | boolean | Include the latest ASO metadata output |
+| `includeLatestTaskBundle` | boolean | Generate and include a task bundle from all available sources |
+| `submissionGoal` | string (optional) | Goal for this submission (included in the release packet and agent brief) |
+| `reviewerNotesOverride` | string (optional) | Override the generated App Review submission notes |
+| `internalNotes` | string (optional) | Internal notes included in the release packet (not shown to Apple) |
+| `agentMode` | boolean (optional) | Reserved for future agent-specific behaviour |
+
+**Response:** `ReleasePackage` object:
+
+```json
+{
+  "id": "uuid",
+  "appId": "uuid",
+  "releaseName": "v2.1.0",
+  "summary": "Release is blocked and must not be submitted. 4/5 artifact(s) included. Risk: high. 1 blocking issue(s).",
+  "readinessStatus": "blocked",
+  "riskLevel": "high",
+  "includedArtifacts": [
+    {
+      "type": "release-audit",
+      "id": "uuid",
+      "included": true,
+      "summary": "Medium-risk release. One high-severity issue found."
+    },
+    {
+      "type": "storekit",
+      "id": "uuid",
+      "included": true,
+      "summary": "StoreKit diagnostics: medium risk. IAP checklist generated."
+    },
+    {
+      "type": "app-review",
+      "id": "",
+      "included": false,
+      "summary": "No App Review response found for this app."
+    },
+    {
+      "type": "aso",
+      "id": "uuid",
+      "included": true,
+      "summary": "Generated 3 subtitle options. No warnings."
+    },
+    {
+      "type": "task-bundle",
+      "id": "uuid",
+      "included": true,
+      "summary": "3 task(s) from release-audit, storekit."
+    }
+  ],
+  "appReviewSubmissionNotes": "Products are available in sandbox. Use sandbox Apple ID to test purchases.",
+  "testFlightChecklist": [
+    "Verify dark mode on iPhone 14 Pro",
+    "Test on iOS 16"
+  ],
+  "appReviewChecklist": [
+    "Include demo account credentials in reviewer notes"
+  ],
+  "storeKitChecklist": [
+    "Restore Purchases button visible on paywall",
+    "Confirm all product IDs are active in App Store Connect.",
+    "Verify receipt validation is working."
+  ],
+  "metadataChecklist": [
+    "Verify subtitle is updated in App Store Connect (max 30 chars).",
+    "Verify promotional text is updated (max 170 chars)."
+  ],
+  "blockingIssues": [
+    "[StoreKit] Restore Purchases button missing from paywall. — Add a visible Restore Purchases button on the paywall screen."
+  ],
+  "recommendedNextActions": [
+    "Resolve all blocking issues before submitting to App Store Review.",
+    "Generate an App Review response to prepare submission notes and reviewer instructions."
+  ],
+  "releasePacketMarkdown": "# Release Package: v2.1.0\n\n...",
+  "agentExecutionBrief": "## Agent Execution Brief: App Store Release Prep\n\n...",
+  "createdAt": "2025-06-01T12:00:00.000Z"
+}
+```
+
+**`readinessStatus` values:**
+- `ready` — no blocking issues and all requested artifacts present with low risk
+- `needs-work` — one or more artifacts are missing, or medium-risk issues detected
+- `blocked` — high-risk issues or blocking issues present; do not submit
+
+**`riskLevel` values:** derived from the worst-case risk across all included artifacts.
+
+**`includedArtifacts[].type` values:** `release-audit` | `storekit` | `app-review` | `aso` | `task-bundle`
+
+**Important behavior:**
+- If no artifact is saved for a requested type, it is included as `included: false` and a recommended next action is added.
+- `readinessStatus` is `blocked` if any blocking issues exist or the risk level is `high`.
+- `readinessStatus` is `needs-work` if any artifact is missing or risk level is `medium`.
+- `readinessStatus` is `ready` only if no blocking issues, no missing artifacts, and risk level is `low`.
+- `riskLevel` is derived from the worst risk level across all included artifacts.
+  - Release audit: score ≥ 60 → `high`, 30–59 → `medium`, < 30 → `low`
+  - StoreKit and App Review: use their own `riskLevel` field
+  - ASO: `medium` if any warnings, otherwise `low`
+- `appReviewSubmissionNotes` priority: `reviewerNotesOverride` → App Review response text → StoreKit `appReviewNotes`
+- `storeKitChecklist` includes only `required` priority items from the StoreKit diagnostics implementation checklist.
+- Task bundles are generated inline from available sources (audit, StoreKit, App Review, ASO) and are not separately persisted.
+- Do not submit anything to App Store Connect automatically.
+
 ---
 
 ## Data Storage

@@ -178,6 +178,14 @@ export default function AppDetailPage() {
             accent
           />
           <WorkspaceCard
+            href={`/apps/${appId}/release-package`}
+            emoji="🚀"
+            title="Release Package"
+            description="Combine audit, StoreKit, App Review response, ASO metadata, and tasks into one submission-ready release packet."
+            cta="Generate package"
+            accent
+          />
+          <WorkspaceCard
             href={`/apps/${appId}/api`}
             emoji="⚡"
             title="API Usage"

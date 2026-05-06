@@ -363,7 +363,7 @@ describe("generateReleasePackage", () => {
     expect(pkg.appReviewSubmissionNotes).toBe(mockStoreKit.appReviewNotes)
   })
 
-  it("uses version and buildNumber in releaseName when releaseName is not provided", () => {
+  it("uses version in releaseName when releaseName is not provided", () => {
     const pkg = generateReleasePackage(
       APP_ID,
       APP_NAME,

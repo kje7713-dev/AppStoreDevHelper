@@ -60,7 +60,7 @@ function exportMarkdown(pkg: ReleasePackage): void {
   a.href = url
   a.download = `release-package-${pkg.id}.md`
   a.click()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 100)
 }
 
 function ToggleCard({

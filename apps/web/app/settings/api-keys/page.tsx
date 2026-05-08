@@ -23,12 +23,16 @@ export default function ApiKeysSettingsPage() {
   const [error, setError] = useState("")
   const [newKey, setNewKey] = useState<CreatedApiKey | null>(null)
 
+  async function fetchApiKeys(): Promise<ApiKeyRecord[]> {
+    const res = await fetch("/api/api-keys")
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  }
+
   async function loadKeys(showLoader = true) {
     try {
       if (showLoader) setLoading(true)
-      const res = await fetch("/api/api-keys")
-      const data = await res.json()
-      setKeys(Array.isArray(data) ? data : [])
+      setKeys(await fetchApiKeys())
     } catch {
       setError("Failed to load API keys.")
     } finally {
@@ -38,10 +42,9 @@ export default function ApiKeysSettingsPage() {
 
   useEffect(() => {
     let active = true
-    fetch("/api/api-keys")
-      .then((res) => res.json())
+    fetchApiKeys()
       .then((data) => {
-        if (active) setKeys(Array.isArray(data) ? data : [])
+        if (active) setKeys(data)
       })
       .catch(() => {
         if (active) setError("Failed to load API keys.")

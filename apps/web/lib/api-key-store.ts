@@ -58,13 +58,16 @@ export function createApiKeyStore(dataDir: string) {
       const raw = readFileSync(apiKeysFile, "utf-8")
       const parsed: unknown[] = JSON.parse(raw)
       if (!Array.isArray(parsed)) return []
-      return parsed.filter((item) => {
+      const validKeys: StoredApiKey[] = []
+      parsed.forEach((item) => {
         const result = StoredApiKeySchema.safeParse(item)
         if (!result.success) {
           console.warn("[api-key-store] Skipping invalid API key record:", result.error.flatten())
+          return
         }
-        return result.success
-      }) as StoredApiKey[]
+        validKeys.push(result.data)
+      })
+      return validKeys
     } catch {
       return []
     }

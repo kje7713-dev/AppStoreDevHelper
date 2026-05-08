@@ -80,7 +80,7 @@ export function createApiKeyStore(dataDir: string) {
 
   function createApiKey(label: string): { key: ApiKeyRecord; rawKey: string } {
     const now = new Date().toISOString()
-    const rawKey = `appops_${randomBytes(24).toString("base64url")}`
+    const rawKey = `appops_${randomBytes(32).toString("base64url")}`
     const stored: StoredApiKey = {
       id: randomUUID(),
       label: label.trim(),

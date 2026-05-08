@@ -69,7 +69,7 @@ export default function ApiDocsPage() {
   const params = useParams()
   const appId = params.appId as string
   const BASE = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
-  const AUTH_HEADER = `-H "Authorization: Bearer YOUR_API_KEY"`
+  const AUTH_HEADER = `Authorization: Bearer YOUR_API_KEY`
 
   const endpoints: EndpointCardProps[] = [
     {
@@ -111,7 +111,7 @@ export default function ApiDocsPage() {
       description: "Run a release audit. Returns a ReleaseAudit object with risk score, issues, checklists, and GitHub tasks.",
       note: "This endpoint calls an AI model. Ensure OPENAI_API_KEY is set in the environment.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/release/audit" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "latestChanges": "Added dark mode and fixed crash on iOS 17",
@@ -138,7 +138,7 @@ export default function ApiDocsPage() {
       description: "Generate a StoreKit diagnostics spec, reviewer-safe debug panel fields, implementation checklist, and GitHub task.",
       note: "This endpoint calls an AI model. Ensure OPENAI_API_KEY is set in the environment.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/storekit/diagnostics-spec" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "productIds": ["com.example.app.monthly", "com.example.app.annual"],
@@ -158,7 +158,7 @@ export default function ApiDocsPage() {
       path: `/api/apps/${appId}/app-review/response`,
       description: "Generate an App Review rejection response package with reviewer instructions and internal tasks.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/app-review/response" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "rejectionText": "We could not complete an in-app purchase."
@@ -169,7 +169,7 @@ export default function ApiDocsPage() {
       path: `/api/apps/${appId}/aso/generate`,
       description: "Generate ASO metadata options and GitHub-ready implementation tasks.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/aso/generate" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "appDescription": "Habit tracker for indie makers"
@@ -180,7 +180,7 @@ export default function ApiDocsPage() {
       path: `/api/apps/${appId}/tasks/bundle`,
       description: "Generate a GitHub task bundle from saved app outputs.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/tasks/bundle" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "includeReleaseAuditTasks": true,
@@ -194,7 +194,7 @@ export default function ApiDocsPage() {
       path: `/api/apps/${appId}/release/package`,
       description: "Generate a full release package by combining latest saved outputs.",
       curl: `curl -X POST "${BASE}/api/apps/${appId}/release/package" \\
-  ${AUTH_HEADER} \\
+  -H "${AUTH_HEADER}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "includeLatestAudit": true,

@@ -6,12 +6,15 @@ import { getSpecsForApp, getSpec } from "@/lib/storekit-store"
 import { getLatestAppReviewForApp, getAppReview } from "@/lib/app-review-store"
 import { getLatestAsoOutputForApp, getAsoOutput } from "@/lib/aso-store"
 import { generateTaskBundle } from "@core/tasks"
+import { requireApiKey } from "@/lib/api-key-auth"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
+  const authError = requireApiKey(req)
+  if (authError) return authError
   const app = getApp(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 

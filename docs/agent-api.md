@@ -2,7 +2,7 @@
 
 This document explains how an automated agent or script can operate AppOps Agent without using the browser UI.
 
-> **Warning:** Authentication and API keys are not implemented yet. All endpoints are open. Do not expose this server publicly with sensitive data.
+> **Auth:** Agent-facing generation endpoints support API key auth via `Authorization: Bearer <api-key>`. Create keys with `/api/api-keys` or `/settings/api-keys`.
 
 ---
 
@@ -13,6 +13,39 @@ http://localhost:3000
 ```
 
 Set `BASE_URL` in your agent to the actual deployment URL if running remotely.
+
+---
+
+## Authentication
+
+Create an API key:
+
+```
+POST /api/api-keys
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "label": "local-agent"
+}
+```
+
+- Keys are generated securely and only the hashed form is persisted.
+- The raw key is returned once, only in the create response.
+- Revoke keys with `DELETE /api/api-keys/:keyId`.
+
+When at least one active key exists, these endpoints require `Authorization: Bearer <api-key>`:
+- `POST /api/apps/:appId/release/audit`
+- `POST /api/apps/:appId/storekit/diagnostics-spec`
+- `POST /api/apps/:appId/app-review/response`
+- `POST /api/apps/:appId/aso/generate`
+- `POST /api/apps/:appId/tasks/bundle`
+- `POST /api/apps/:appId/release/package`
+
+If no active keys exist yet, protected endpoints remain open for local bootstrap.
 
 ---
 
@@ -103,6 +136,7 @@ Content-Type: application/json
 ```
 POST /api/apps/:appId/release/audit
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 > **Requires `OPENAI_API_KEY`** in the server environment.
@@ -182,6 +216,7 @@ GET /api/audits/:auditId
 ```
 POST /api/apps/:appId/app-review/response
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 **Request body:**
@@ -255,6 +290,7 @@ Content-Type: application/json
 ```
 POST /api/apps/:appId/storekit/diagnostics-spec
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 > **Requires `OPENAI_API_KEY`** in the server environment.
@@ -298,6 +334,7 @@ Content-Type: application/json
 ```
 POST /api/apps/:appId/aso/generate
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 **Request body:**
@@ -392,6 +429,7 @@ Content-Type: application/json
 ```
 POST /api/apps/:appId/tasks/bundle
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 Collects GitHub-ready tasks from release audits, StoreKit diagnostics, App Review responses, and ASO metadata into a single structured bundle. Uses the latest saved output for each source unless a specific ID is provided.
@@ -586,6 +624,7 @@ The response includes:
 ```
 POST /api/apps/:appId/release/package
 Content-Type: application/json
+Authorization: Bearer <api-key>
 ```
 
 **Request body:**
@@ -732,6 +771,7 @@ All data is persisted to `.data/` files in the project root:
 | `.data/storekit-specs.json` | StoreKit diagnostics specs |
 | `.data/app-review-responses.json` | App Review responses |
 | `.data/aso-outputs.json` | ASO metadata outputs |
+| `.data/api-keys.json` | API key metadata + hashed keys |
 
 These are plain JSON files. Back them up or replace them with a database before deploying to production.
 
@@ -739,7 +779,6 @@ These are plain JSON files. Back them up or replace them with a database before 
 
 ## Not implemented (future PRs)
 
-- Authentication / API keys
 - Billing or subscription enforcement
 - GitHub OAuth
 - Apple App Store Connect API integration

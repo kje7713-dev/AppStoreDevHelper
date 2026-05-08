@@ -5,6 +5,7 @@ import { ReleaseAuditInputSchema } from "@/lib/schemas"
 import { generateMockAudit, type AuditInput } from "@core/release-audit"
 import type { ReleaseAudit } from "@/lib/types"
 import { randomUUID } from "crypto"
+import { requireApiKey } from "@/lib/api-key-auth"
 
 async function generateAIAudit(
   appId: string,
@@ -98,6 +99,8 @@ export async function POST(
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
+  const authError = requireApiKey(req)
+  if (authError) return authError
   const app = getApp(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 

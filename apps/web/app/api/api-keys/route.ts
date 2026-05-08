@@ -6,7 +6,7 @@ const CreateApiKeyInputSchema = z.object({
   label: z.string().min(1).max(80),
 })
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   return NextResponse.json(listApiKeys())
 }
 

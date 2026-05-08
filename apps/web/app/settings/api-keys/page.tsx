@@ -23,9 +23,9 @@ export default function ApiKeysSettingsPage() {
   const [error, setError] = useState("")
   const [newKey, setNewKey] = useState<CreatedApiKey | null>(null)
 
-  async function loadKeys() {
+  async function loadKeys(showLoader = true) {
     try {
-      setLoading(true)
+      if (showLoader) setLoading(true)
       const res = await fetch("/api/api-keys")
       const data = await res.json()
       setKeys(Array.isArray(data) ? data : [])
@@ -37,7 +37,22 @@ export default function ApiKeysSettingsPage() {
   }
 
   useEffect(() => {
-    loadKeys()
+    let active = true
+    fetch("/api/api-keys")
+      .then((res) => res.json())
+      .then((data) => {
+        if (active) setKeys(Array.isArray(data) ? data : [])
+      })
+      .catch(() => {
+        if (active) setError("Failed to load API keys.")
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
 
   async function handleCreate(e: FormEvent<HTMLFormElement>) {

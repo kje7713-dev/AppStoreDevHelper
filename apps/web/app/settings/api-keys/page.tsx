@@ -70,7 +70,7 @@ export default function ApiKeysSettingsPage() {
       if (!res.ok) throw new Error(data?.error ?? "Failed to create API key")
       setNewKey(data)
       setLabel("")
-      await loadKeys()
+      await loadKeys(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create API key")
     } finally {
@@ -86,7 +86,7 @@ export default function ApiKeysSettingsPage() {
         const data = await res.json()
         throw new Error(data?.error ?? "Failed to revoke API key")
       }
-      await loadKeys()
+      await loadKeys(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to revoke API key")
     }

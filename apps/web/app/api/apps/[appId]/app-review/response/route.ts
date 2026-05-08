@@ -3,12 +3,15 @@ import { getApp } from "@/lib/app-store"
 import { AppReviewResponseInputSchema } from "@/lib/schemas"
 import { saveAppReview } from "@/lib/app-review-store"
 import { generateAppReviewResponse } from "@core/app-review"
+import { requireApiKey } from "@/lib/api-key-auth"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
+  const authError = requireApiKey(req)
+  if (authError) return authError
   const app = getApp(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 

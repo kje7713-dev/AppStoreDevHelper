@@ -33,6 +33,17 @@ export default function Home() {
               Manage your app profiles and run release audits.
             </p>
           </Link>
+
+          <Link
+            href="/settings/api-keys"
+            className="block p-6 rounded-xl border border-gray-800 bg-gray-900 hover:border-indigo-500 transition-colors md:col-span-2"
+          >
+            <div className="text-2xl mb-3">🔐</div>
+            <h2 className="text-xl font-semibold mb-2">API Keys</h2>
+            <p className="text-gray-400 text-sm">
+              Create and revoke API keys for agent and script access to protected generation endpoints.
+            </p>
+          </Link>
         </div>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">

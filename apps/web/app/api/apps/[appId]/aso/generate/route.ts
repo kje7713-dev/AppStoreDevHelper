@@ -3,12 +3,15 @@ import { getApp } from "@/lib/app-store"
 import { AsoGenerateInputSchema } from "@/lib/schemas"
 import { saveAsoOutput } from "@/lib/aso-store"
 import { generateAsoMetadata } from "@core/aso"
+import { requireApiKey } from "@/lib/api-key-auth"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ appId: string }> }
 ) {
   const { appId } = await params
+  const authError = requireApiKey(req)
+  if (authError) return authError
   const app = getApp(appId)
   if (!app) return NextResponse.json({ error: "App not found" }, { status: 404 })
 

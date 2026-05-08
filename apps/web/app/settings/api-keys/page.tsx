@@ -25,6 +25,9 @@ export default function ApiKeysSettingsPage() {
 
   async function fetchApiKeys(): Promise<ApiKeyRecord[]> {
     const res = await fetch("/api/api-keys")
+    if (!res.ok) {
+      throw new Error(`Failed to load API keys (${res.status})`)
+    }
     const data = await res.json()
     return Array.isArray(data) ? data : []
   }

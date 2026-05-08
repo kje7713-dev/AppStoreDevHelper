@@ -230,6 +230,10 @@ export default function ApiDocsPage() {
         </div>
 
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-4">Endpoints</h2>
+        <p className="text-xs text-gray-500 mb-4">
+          Replace <code className="text-gray-300">YOUR_API_KEY</code> with a real key from{" "}
+          <Link href="/settings/api-keys" className="underline">/settings/api-keys</Link>.
+        </p>
 
         <div className="space-y-6">
           {endpoints.map((ep, i) => (

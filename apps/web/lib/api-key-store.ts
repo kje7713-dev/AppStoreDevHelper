@@ -121,7 +121,7 @@ export function createApiKeyStore(dataDir: string) {
     const inputBuffer = Buffer.from(inputHash, "hex")
     const matchingKey = readApiKeys().find((stored) => {
       if (stored.revokedAt) return false
-      if (!/^[a-f0-9]{64}$/i.test(stored.keyHash)) return false
+      if (!/^[a-f0-9]{64}$/.test(stored.keyHash)) return false
       const storedBuffer = Buffer.from(stored.keyHash, "hex")
       if (inputBuffer.length !== storedBuffer.length) return false
       return timingSafeEqual(inputBuffer, storedBuffer)
